@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import ExerciseAnimation from '../components/ExerciseAnimation';
 import MuscleZoomCard from '../components/MuscleZoomCard';
 import { Card, Pill, PrimaryButton } from '../components/ui';
+import { useCustomWorkouts } from '../context/CustomWorkoutContext';
 import { useTrainingLog } from '../context/TrainingLogContext';
 import { useUser } from '../context/UserContext';
 import { getMuscleGroup } from '../data/muscleGroups';
@@ -19,7 +20,8 @@ export default function ExerciseDetailScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<WorkoutsStackParamList, 'ExerciseDetail'>>();
   const { planTier } = useUser();
   const { getSuggestion } = useTrainingLog();
-  const workout = WORKOUTS.find((w) => w.id === route.params.workoutId);
+  const { getCustomWorkout } = useCustomWorkouts();
+  const workout = WORKOUTS.find((w) => w.id === route.params.workoutId) ?? getCustomWorkout(route.params.workoutId);
   const exercise = workout?.exercises.find((e) => e.id === route.params.exerciseId);
 
   if (!workout || !exercise) return null;

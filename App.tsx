@@ -3,8 +3,10 @@ import React from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { CustomPlanProvider } from './src/context/CustomPlanContext';
+import { CustomWorkoutProvider } from './src/context/CustomWorkoutContext';
 import { TrainingLogProvider } from './src/context/TrainingLogContext';
 import { UserProvider } from './src/context/UserContext';
+import { WorkoutDraftProvider } from './src/context/WorkoutDraftContext';
 import RootNavigator from './src/navigation/RootNavigator';
 
 export default function App() {
@@ -14,8 +16,12 @@ export default function App() {
         <UserProvider>
           <TrainingLogProvider>
             <CustomPlanProvider>
-              <RootNavigator />
-              <StatusBar style="light" />
+              <CustomWorkoutProvider>
+                <WorkoutDraftProvider>
+                  <RootNavigator />
+                  <StatusBar style="light" />
+                </WorkoutDraftProvider>
+              </CustomWorkoutProvider>
             </CustomPlanProvider>
           </TrainingLogProvider>
         </UserProvider>

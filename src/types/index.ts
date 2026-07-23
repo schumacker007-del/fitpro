@@ -115,6 +115,8 @@ export interface WorkoutPlan {
   exercises: ExerciseStep[];
   /** Planos "biblioteca" (agrupam exercícios por grupo muscular) não aparecem na listagem principal de treinos. */
   hidden?: boolean;
+  /** Treino montado pelo próprio aluno (ou pelo professor dele, direto no app) — editável e removível. */
+  custom?: boolean;
 }
 
 export interface Meal {

@@ -7,6 +7,8 @@ export type WorkoutsStackParamList = {
   MuscleGroups: undefined;
   MuscleGroupDetail: { muscleGroupId: MuscleGroupId };
   ActiveWorkout: { workoutId: string };
+  WorkoutBuilder: { workoutId?: string } | undefined;
+  ExercisePicker: undefined;
 };
 
 export type ProfileStackParamList = {

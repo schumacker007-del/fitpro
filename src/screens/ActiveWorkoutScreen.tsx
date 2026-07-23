@@ -10,6 +10,7 @@ import ExerciseAnimation from '../components/ExerciseAnimation';
 import RestTimer from '../components/RestTimer';
 import RpeSelector from '../components/RpeSelector';
 import { Card, PrimaryButton } from '../components/ui';
+import { useCustomWorkouts } from '../context/CustomWorkoutContext';
 import { useTrainingLog } from '../context/TrainingLogContext';
 import { getMuscleGroup } from '../data/muscleGroups';
 import { WORKOUTS } from '../data/workouts';
@@ -23,7 +24,8 @@ export default function ActiveWorkoutScreen() {
   const route = useRoute<RouteProp<WorkoutsStackParamList, 'ActiveWorkout'>>();
   const navigation = useNavigation<NativeStackNavigationProp<WorkoutsStackParamList, 'ActiveWorkout'>>();
   const { addLog, getSuggestion } = useTrainingLog();
-  const workout = WORKOUTS.find((w) => w.id === route.params.workoutId);
+  const { getCustomWorkout } = useCustomWorkouts();
+  const workout = WORKOUTS.find((w) => w.id === route.params.workoutId) ?? getCustomWorkout(route.params.workoutId);
 
   const [exerciseIndex, setExerciseIndex] = useState(0);
   const [setNumber, setSetNumber] = useState(1);

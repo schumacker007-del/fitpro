@@ -6,6 +6,7 @@ import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ExerciseAnimation from '../components/ExerciseAnimation';
 import { Card, Pill, PrimaryButton, ProBadge } from '../components/ui';
+import { useCustomWorkouts } from '../context/CustomWorkoutContext';
 import { useUser } from '../context/UserContext';
 import { getMuscleGroup } from '../data/muscleGroups';
 import { RESPONSIBLE_PROFESSIONAL } from '../data/professional';
@@ -17,7 +18,8 @@ export default function WorkoutDetailScreen() {
   const route = useRoute<RouteProp<WorkoutsStackParamList, 'WorkoutDetail'>>();
   const navigation = useNavigation<NativeStackNavigationProp<WorkoutsStackParamList, 'WorkoutDetail'>>();
   const { planTier } = useUser();
-  const workout = WORKOUTS.find((w) => w.id === route.params.workoutId);
+  const { getCustomWorkout } = useCustomWorkouts();
+  const workout = WORKOUTS.find((w) => w.id === route.params.workoutId) ?? getCustomWorkout(route.params.workoutId);
 
   if (!workout) return null;
 
@@ -29,8 +31,16 @@ export default function WorkoutDetailScreen() {
         <Pressable onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="chevron-back" size={22} color={colors.text} />
         </Pressable>
-        <Text style={[typography.h3, { color: colors.text }]}>{workout.title}</Text>
-        <View style={{ width: 22 }} />
+        <Text style={[typography.h3, { color: colors.text }]} numberOfLines={1}>
+          {workout.title}
+        </Text>
+        {workout.custom ? (
+          <Pressable onPress={() => navigation.navigate('WorkoutBuilder', { workoutId: workout.id })} style={styles.backBtn}>
+            <Ionicons name="create-outline" size={20} color={colors.text} />
+          </Pressable>
+        ) : (
+          <View style={{ width: 22 }} />
+        )}
       </View>
 
       {isLocked ? (

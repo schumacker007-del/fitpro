@@ -16,7 +16,8 @@ const FEATURES: { label: string; free: boolean; pro: boolean }[] = [
   { label: 'Biblioteca completa de treinos (todos os níveis)', free: false, pro: true },
   { label: 'Plano alimentar semanal detalhado', free: false, pro: true },
   { label: 'Acompanhamento supervisionado por Educador Físico', free: false, pro: true },
-  { label: 'Treino sob medida (semanal ou mensal) montado pelo seu professor', free: false, pro: true },
+  { label: 'Monte seu próprio treino (com seu professor ou do seu jeito)', free: false, pro: true },
+  { label: 'Treino sob medida (semanal ou mensal) via professor do FitPro', free: false, pro: true },
   { label: 'Sem anúncios e novidades em primeira mão', free: false, pro: true },
 ];
 

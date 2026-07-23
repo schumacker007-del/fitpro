@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, Easing, StyleSheet, View } from 'react-native';
-import Svg, { Circle, Defs, Ellipse, G, LinearGradient, Rect, Stop } from 'react-native-svg';
+import { Animated, Easing, Image, StyleSheet, View } from 'react-native';
+import Svg, { Defs, Ellipse, RadialGradient, Stop } from 'react-native-svg';
 import { colors, radius } from '../theme';
 
 type AnimationKind = 'squat' | 'pushup' | 'jump' | 'lunge' | 'plank' | 'row' | 'curl' | 'stretch';
@@ -10,208 +10,98 @@ interface Props {
   size?: number;
   /** Cor de destaque do músculo trabalhado (vem do grupo muscular do exercício). */
   highlightColor?: string;
+  /** Mantido por compatibilidade. */
+  freezeAt?: number;
 }
 
-const AnimatedG = Animated.createAnimatedComponent(G);
-
-// --- Pontos de articulação (pose neutra, corpo de perfil olhando pra direita) ---
-const SHOULDER = { x: 104, y: 64 };
-const ELBOW = { x: 104, y: 112 };
-const HIP_FRONT = { x: 98, y: 132 };
-const KNEE_FRONT = { x: 98, y: 186 };
-const HIP_BACK = { x: 80, y: 132 };
-const KNEE_BACK = { x: 80, y: 186 };
-
-type Range = [number, number];
-interface JointConfig {
-  shoulder?: Range;
-  elbow?: Range;
-  frontHip?: Range;
-  frontKnee?: Range;
-  backHip?: Range;
-  backKnee?: Range;
-  bodyY?: Range;
-  wholeRotation?: number;
-  torsoLean?: number;
-  glowZone?: 'torso' | 'arm' | 'leg' | 'core' | 'none';
-}
-
-const JOINTS: Record<AnimationKind, JointConfig> = {
-  squat: {
-    shoulder: [0, -25],
-    elbow: [0, 15],
-    frontHip: [0, 48],
-    frontKnee: [0, -78],
-    backHip: [0, 44],
-    backKnee: [0, -74],
-    bodyY: [0, 26],
-    glowZone: 'leg',
-  },
-  lunge: {
-    shoulder: [0, -10],
-    elbow: [0, 10],
-    frontHip: [0, 38],
-    frontKnee: [0, -75],
-    backHip: [0, -22],
-    backKnee: [0, -34],
-    bodyY: [0, 14],
-    glowZone: 'leg',
-  },
-  jump: {
-    shoulder: [10, -155],
-    elbow: [0, -10],
-    frontHip: [0, -18],
-    frontKnee: [0, 10],
-    backHip: [0, 18],
-    backKnee: [0, -10],
-    bodyY: [0, -22],
-    glowZone: 'leg',
-  },
-  pushup: {
-    shoulder: [-6, -18],
-    elbow: [-8, -68],
-    frontHip: [0, -6],
-    frontKnee: [0, 4],
-    backHip: [0, -4],
-    backKnee: [0, 4],
-    wholeRotation: 90,
-    glowZone: 'torso',
-  },
-  plank: {
-    shoulder: [-4, 2],
-    elbow: [-2, 4],
-    frontHip: [0, 3],
-    backHip: [0, -3],
-    wholeRotation: 90,
-    glowZone: 'core',
-  },
-  row: {
-    shoulder: [10, -70],
-    elbow: [20, -85],
-    frontHip: [0, 6],
-    backHip: [0, -4],
-    torsoLean: 34,
-    glowZone: 'torso',
-  },
-  curl: {
-    shoulder: [6, -4],
-    elbow: [0, -115],
-    frontHip: [0, 2],
-    backHip: [0, -2],
-    glowZone: 'arm',
-  },
-  stretch: {
-    shoulder: [-40, -70],
-    elbow: [0, -15],
-    frontHip: [0, 4],
-    backHip: [0, -4],
-    torsoLean: 0,
-    glowZone: 'none',
-  },
+// Pose "de trabalho" (contração / pico do movimento).
+const POSE_WORK: Record<AnimationKind, any> = {
+  squat: require('../../assets/poses/squat.png'),
+  pushup: require('../../assets/poses/pushup.png'),
+  jump: require('../../assets/poses/jump.png'),
+  lunge: require('../../assets/poses/lunge.png'),
+  plank: require('../../assets/poses/plank.png'),
+  row: require('../../assets/poses/row.png'),
+  curl: require('../../assets/poses/curl.png'),
+  stretch: require('../../assets/poses/stretch.png'),
 };
 
-function lighten(hex: string) {
-  // Clareia levemente uma cor hex pra criar um leve gradiente "3D" no preenchimento.
-  const num = parseInt(hex.replace('#', ''), 16);
-  const r = Math.min(255, ((num >> 16) & 255) + 45);
-  const g = Math.min(255, ((num >> 8) & 255) + 45);
-  const b = Math.min(255, (num & 255) + 45);
-  return `rgb(${r},${g},${b})`;
-}
+// Pose "de partida" (retorno / preparação). Isométricos (plank) não têm segunda pose.
+const POSE_REST: Partial<Record<AnimationKind, any>> = {
+  squat: require('../../assets/poses/squat_2.png'),
+  pushup: require('../../assets/poses/pushup_2.png'),
+  jump: require('../../assets/poses/jump_2.png'),
+  lunge: require('../../assets/poses/lunge_2.png'),
+  row: require('../../assets/poses/row_2.png'),
+  curl: require('../../assets/poses/curl_2.png'),
+  stretch: require('../../assets/poses/stretch_2.png'),
+};
+
+// Região aproximada (fração 0-1 da imagem) do músculo em destaque em cada pose.
+const GLOW_BOX: Record<AnimationKind, { x: number; y: number; w: number; h: number } | null> = {
+  squat: { x: 0.12, y: 0.45, w: 0.48, h: 0.4 },
+  pushup: { x: 0.4, y: 0.32, w: 0.32, h: 0.4 },
+  jump: { x: 0.14, y: 0.5, w: 0.72, h: 0.42 },
+  lunge: { x: 0.1, y: 0.42, w: 0.4, h: 0.36 },
+  plank: { x: 0.34, y: 0.28, w: 0.32, h: 0.4 },
+  row: { x: 0.28, y: 0.13, w: 0.42, h: 0.3 },
+  curl: { x: 0.33, y: 0.14, w: 0.4, h: 0.24 },
+  stretch: null,
+};
 
 export default function ExerciseAnimation({ kind, size = 220, highlightColor }: Props) {
-  const progress = useRef(new Animated.Value(0)).current;
-  const config = JOINTS[kind];
+  const move = useRef(new Animated.Value(0)).current;
   const glowColor = highlightColor ?? colors.primary;
+  const glowBox = GLOW_BOX[kind];
+  const restImage = POSE_REST[kind];
 
   useEffect(() => {
-    progress.setValue(0);
+    // Ciclo: pausa na posição de partida -> movimento até o pico -> pausa no pico -> volta.
     const loop = Animated.loop(
       Animated.sequence([
-        Animated.timing(progress, {
-          toValue: 1,
-          duration: 950,
-          easing: Easing.inOut(Easing.quad),
-          useNativeDriver: false,
-        }),
-        Animated.timing(progress, {
-          toValue: 0,
-          duration: 950,
-          easing: Easing.inOut(Easing.quad),
-          useNativeDriver: false,
-        }),
+        Animated.delay(280),
+        Animated.timing(move, { toValue: 1, duration: 620, easing: Easing.out(Easing.cubic), useNativeDriver: false }),
+        Animated.delay(320),
+        Animated.timing(move, { toValue: 0, duration: 620, easing: Easing.in(Easing.cubic), useNativeDriver: false }),
       ])
     );
     loop.start();
     return () => loop.stop();
-  }, [kind, progress]);
+  }, [kind, move]);
 
-  const angle = (range?: Range) => (range ? progress.interpolate({ inputRange: [0, 1], outputRange: range }) : 0);
-  const glowOpacity = progress.interpolate({ inputRange: [0, 1], outputRange: [0.25, 0.7] });
-  const glowScale = progress.interpolate({ inputRange: [0, 1], outputRange: [0.9, 1.15] });
-
-  const bodyColor = '#C7CEDD';
-  const bodyId = `body-${kind}`;
+  const workOpacity = move; // 0 (pose de partida) -> 1 (pose de trabalho)
+  const restOpacity = move.interpolate({ inputRange: [0, 1], outputRange: [1, 0] });
+  const scale = move.interpolate({ inputRange: [0, 1], outputRange: [1, 1.035] });
+  const glowOpacity = move.interpolate({ inputRange: [0, 1], outputRange: [0.35, 0.95] });
 
   return (
     <View style={[styles.wrapper, { width: size, height: size }]}>
-      <Svg viewBox="0 0 200 240" width="100%" height="100%">
-        <Defs>
-          <LinearGradient id={bodyId} x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor={lighten(bodyColor)} />
-            <Stop offset="1" stopColor={bodyColor} />
-          </LinearGradient>
-        </Defs>
-
-        <AnimatedG
-          originX={95}
-          originY={130}
-          rotation={config.wholeRotation ?? 0}
-          y={angle(config.bodyY) as unknown as number}
-        >
-          {/* Perna de trás */}
-          <AnimatedG originX={HIP_BACK.x} originY={HIP_BACK.y} rotation={angle(config.backHip) as unknown as number}>
-            <Rect x={HIP_BACK.x - 9} y={HIP_BACK.y} width={18} height={52} rx={9} fill={`url(#${bodyId})`} stroke={colors.background} strokeWidth={2.5} />
-            <AnimatedG originX={KNEE_BACK.x} originY={KNEE_BACK.y} rotation={angle(config.backKnee) as unknown as number}>
-              <Rect x={KNEE_BACK.x - 7} y={KNEE_BACK.y} width={14} height={46} rx={7} fill={`url(#${bodyId})`} stroke={colors.background} strokeWidth={2.5} />
-              <Ellipse cx={KNEE_BACK.x} cy={KNEE_BACK.y + 50} rx={10} ry={6} fill={bodyColor} stroke={colors.background} strokeWidth={2.5} />
-            </AnimatedG>
-          </AnimatedG>
-
-          {/* Tronco + cabeça + braço */}
-          <G rotation={config.torsoLean ?? 0} originX={95} originY={130}>
-            {config.glowZone === 'torso' || config.glowZone === 'core' ? (
-              <AnimatedGlow cx={95} cy={95} rx={30} ry={42} color={glowColor} opacity={glowOpacity} scale={glowScale} />
-            ) : null}
-
-            <Rect x={72} y={56} width={46} height={80} rx={20} fill={`url(#${bodyId})`} stroke={colors.background} strokeWidth={2.5} />
-            <Circle cx={98} cy={34} r={19} fill={`url(#${bodyId})`} stroke={colors.background} strokeWidth={2.5} />
-
-            <AnimatedG originX={SHOULDER.x} originY={SHOULDER.y} rotation={angle(config.shoulder) as unknown as number}>
-              {config.glowZone === 'arm' ? (
-                <AnimatedGlow cx={SHOULDER.x} cy={SHOULDER.y + 24} rx={20} ry={26} color={glowColor} opacity={glowOpacity} scale={glowScale} />
-              ) : null}
-              <Rect x={SHOULDER.x - 8} y={SHOULDER.y} width={16} height={46} rx={8} fill={`url(#${bodyId})`} stroke={colors.background} strokeWidth={2.5} />
-              <AnimatedG originX={ELBOW.x} originY={ELBOW.y} rotation={angle(config.elbow) as unknown as number}>
-                <Rect x={ELBOW.x - 7} y={ELBOW.y} width={14} height={42} rx={7} fill={`url(#${bodyId})`} stroke={colors.background} strokeWidth={2.5} />
-                <Circle cx={ELBOW.x} cy={ELBOW.y + 46} r={7} fill={bodyColor} stroke={colors.background} strokeWidth={2.5} />
-              </AnimatedG>
-            </AnimatedG>
-          </G>
-
-          {/* Perna da frente */}
-          <AnimatedG originX={HIP_FRONT.x} originY={HIP_FRONT.y} rotation={angle(config.frontHip) as unknown as number}>
-            {config.glowZone === 'leg' ? (
-              <AnimatedGlow cx={HIP_FRONT.x} cy={HIP_FRONT.y + 30} rx={22} ry={34} color={glowColor} opacity={glowOpacity} scale={glowScale} />
-            ) : null}
-            <Rect x={HIP_FRONT.x - 10} y={HIP_FRONT.y} width={20} height={54} rx={10} fill={`url(#${bodyId})`} stroke={colors.background} strokeWidth={2.5} />
-            <AnimatedG originX={KNEE_FRONT.x} originY={KNEE_FRONT.y} rotation={angle(config.frontKnee) as unknown as number}>
-              <Rect x={KNEE_FRONT.x - 8} y={KNEE_FRONT.y} width={16} height={48} rx={8} fill={`url(#${bodyId})`} stroke={colors.background} strokeWidth={2.5} />
-              <Ellipse cx={KNEE_FRONT.x + 6} cy={KNEE_FRONT.y + 50} rx={12} ry={7} fill={bodyColor} stroke={colors.background} strokeWidth={2.5} />
-            </AnimatedG>
-          </AnimatedG>
-        </AnimatedG>
-      </Svg>
+      <Animated.View style={[styles.inner, { transform: [{ scale }] }]}>
+        {restImage ? (
+          <Animated.Image
+            source={restImage}
+            resizeMode="contain"
+            style={[styles.image, styles.layered, { opacity: restOpacity }]}
+          />
+        ) : null}
+        <Animated.Image
+          source={POSE_WORK[kind]}
+          resizeMode="contain"
+          style={[styles.image, styles.layered, { opacity: restImage ? workOpacity : 1 }]}
+        />
+        {glowBox ? (
+          <Svg style={StyleSheet.absoluteFill} viewBox="0 0 100 100" preserveAspectRatio="none">
+            <Defs>
+              <RadialGradient id="exGlow" cx="50%" cy="50%" r="55%">
+                <Stop offset="0%" stopColor={glowColor} stopOpacity={0.85} />
+                <Stop offset="65%" stopColor={glowColor} stopOpacity={0.4} />
+                <Stop offset="100%" stopColor={glowColor} stopOpacity={0} />
+              </RadialGradient>
+            </Defs>
+            <AnimatedGlow box={glowBox} opacity={glowOpacity} />
+          </Svg>
+        ) : null}
+      </Animated.View>
     </View>
   );
 }
@@ -219,32 +109,17 @@ export default function ExerciseAnimation({ kind, size = 220, highlightColor }: 
 const AnimatedEllipse = Animated.createAnimatedComponent(Ellipse);
 
 function AnimatedGlow({
-  cx,
-  cy,
-  rx,
-  ry,
-  color,
+  box,
   opacity,
-  scale,
 }: {
-  cx: number;
-  cy: number;
-  rx: number;
-  ry: number;
-  color: string;
+  box: { x: number; y: number; w: number; h: number };
   opacity: Animated.AnimatedInterpolation<number>;
-  scale: Animated.AnimatedInterpolation<number>;
 }) {
-  return (
-    <AnimatedEllipse
-      cx={cx}
-      cy={cy}
-      rx={Animated.multiply(rx, scale) as unknown as number}
-      ry={Animated.multiply(ry, scale) as unknown as number}
-      fill={color}
-      opacity={opacity as unknown as number}
-    />
-  );
+  const cx = (box.x + box.w / 2) * 100;
+  const cy = (box.y + box.h / 2) * 100;
+  const rx = (box.w / 2) * 100 * 1.15;
+  const ry = (box.h / 2) * 100 * 1.15;
+  return <AnimatedEllipse cx={cx} cy={cy} rx={rx} ry={ry} fill="url(#exGlow)" opacity={opacity as unknown as number} />;
 }
 
 const styles = StyleSheet.create({
@@ -252,9 +127,13 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.surface,
+    backgroundColor: '#050810',
     borderRadius: radius.lg,
     borderWidth: 1,
     borderColor: colors.border,
+    overflow: 'hidden',
   },
+  inner: { width: '92%', height: '92%' },
+  image: { width: '100%', height: '100%' },
+  layered: { position: 'absolute', top: 0, left: 0 },
 });

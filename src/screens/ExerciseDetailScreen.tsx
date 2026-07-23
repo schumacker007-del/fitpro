@@ -4,8 +4,8 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React from 'react';
 import { ScrollView, StyleSheet, Text, View, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import BodyMap from '../components/BodyMap';
 import ExerciseAnimation from '../components/ExerciseAnimation';
+import MuscleZoomCard from '../components/MuscleZoomCard';
 import { Card, Pill, PrimaryButton } from '../components/ui';
 import { useTrainingLog } from '../context/TrainingLogContext';
 import { useUser } from '../context/UserContext';
@@ -42,10 +42,15 @@ export default function ExerciseDetailScreen() {
         <View style={styles.demoRow}>
           <ExerciseAnimation
             kind={exercise.animation}
-            size={180}
+            size={200}
             highlightColor={getMuscleGroup(exercise.primaryMuscles[0]).color}
           />
-          <BodyMap highlighted={exercise.primaryMuscles} size={100} />
+        </View>
+
+        <View style={styles.zoomRow}>
+          {exercise.primaryMuscles.slice(0, 2).map((m) => (
+            <MuscleZoomCard key={m} muscle={m} size={92} />
+          ))}
         </View>
 
         <View style={styles.pillRow}>
@@ -166,6 +171,7 @@ const styles = StyleSheet.create({
   backBtn: { padding: 4 },
   content: { padding: spacing.lg, paddingBottom: spacing.xl, alignItems: 'stretch' },
   demoRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.md },
+  zoomRow: { flexDirection: 'row', justifyContent: 'center', gap: spacing.md, marginTop: spacing.md },
   pillRow: { flexDirection: 'row', gap: 8, justifyContent: 'center', marginTop: spacing.lg, flexWrap: 'wrap' },
   sectionLabel: { color: colors.textMuted, fontSize: 12, fontWeight: '700', marginBottom: 8, textTransform: 'uppercase' },
   value: { color: colors.text, fontSize: 16, fontWeight: '700' },

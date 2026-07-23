@@ -4,7 +4,9 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React from 'react';
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import ProgressChart from '../components/ProgressChart';
 import { Card, Pill, PrimaryButton, SectionTitle } from '../components/ui';
+import { useTrainingLog } from '../context/TrainingLogContext';
 import { useUser } from '../context/UserContext';
 import { RESPONSIBLE_PROFESSIONAL } from '../data/professional';
 import { ProfileStackParamList } from '../navigation/types';
@@ -13,6 +15,9 @@ import { colors, spacing } from '../theme';
 export default function ProfileScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<ProfileStackParamList, 'Profile'>>();
   const { profile, planTier, bmi, downgradeToFree, resetProfile } = useUser();
+  const { logs, getSuggestion } = useTrainingLog();
+
+  const recentExerciseIds = Array.from(new Set(logs.map((l) => l.exerciseId))).slice(0, 3);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -65,6 +70,45 @@ export default function ProfileScreen() {
             )}
           </View>
         </Card>
+
+        <SectionTitle title="Meu progresso" subtitle="Esforço percebido (RPE) registrado no Modo Treino Ativo" />
+        {planTier === 'pro' ? (
+          <Card>
+            <ProgressChart logs={logs} />
+            {recentExerciseIds.length > 0 ? (
+              <View style={{ marginTop: spacing.md, gap: 8 }}>
+                {recentExerciseIds.map((exerciseId) => {
+                  const log = logs.find((l) => l.exerciseId === exerciseId);
+                  const suggestion = getSuggestion(exerciseId);
+                  if (!log || !suggestion || suggestion.suggestion === 'maintain') return null;
+                  const isIncrease = suggestion.suggestion === 'increase_load';
+                  return (
+                    <View key={exerciseId} style={styles.suggestionRow}>
+                      <Ionicons
+                        name={isIncrease ? 'trending-up' : 'alert-circle'}
+                        size={16}
+                        color={isIncrease ? colors.primary : colors.danger}
+                      />
+                      <Text style={styles.suggestionRowText}>
+                        <Text style={{ fontWeight: '800' }}>{log.exerciseName}: </Text>
+                        {isIncrease ? 'considere aumentar a carga.' : 'considere descansar mais.'}
+                      </Text>
+                    </View>
+                  );
+                })}
+              </View>
+            ) : null}
+          </Card>
+        ) : (
+          <Card style={styles.teaserCard}>
+            <Ionicons name="lock-closed" size={20} color={colors.gold} />
+            <Text style={styles.teaserTitle}>Acompanhamento de esforço e progressão no Pro</Text>
+            <Text style={styles.teaserSubtitle}>
+              Registre o RPE dos seus treinos no Modo Treino Ativo e receba sugestões automáticas de carga.
+            </Text>
+            <PrimaryButton label="Ver plano Pro" icon="star" variant="gold" onPress={() => navigation.navigate('Paywall')} />
+          </Card>
+        )}
 
         <SectionTitle title="Responsável técnico" />
         <Card>
@@ -150,4 +194,9 @@ const styles = StyleSheet.create({
   proCredential: { color: colors.primary, fontSize: 11, marginTop: 1, fontWeight: '700' },
   proBio: { color: colors.textMuted, fontSize: 12, lineHeight: 18, marginBottom: 8 },
   disclaimer: { color: colors.textMuted, fontSize: 11, lineHeight: 16, fontStyle: 'italic' },
+  suggestionRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
+  suggestionRowText: { color: colors.textMuted, flex: 1, fontSize: 12, lineHeight: 17 },
+  teaserCard: { alignItems: 'center', gap: 6 },
+  teaserTitle: { color: colors.text, fontWeight: '800', fontSize: 14, textAlign: 'center', marginTop: 4 },
+  teaserSubtitle: { color: colors.textMuted, fontSize: 12, textAlign: 'center', marginBottom: spacing.sm },
 });

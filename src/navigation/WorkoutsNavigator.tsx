@@ -1,5 +1,6 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
+import ActiveWorkoutScreen from '../screens/ActiveWorkoutScreen';
 import ExerciseDetailScreen from '../screens/ExerciseDetailScreen';
 import MuscleGroupDetailScreen from '../screens/MuscleGroupDetailScreen';
 import MuscleGroupsScreen from '../screens/MuscleGroupsScreen';
@@ -17,6 +18,7 @@ export default function WorkoutsNavigator() {
       <Stack.Screen name="ExerciseDetail" component={ExerciseDetailScreen} />
       <Stack.Screen name="MuscleGroups" component={MuscleGroupsScreen} />
       <Stack.Screen name="MuscleGroupDetail" component={MuscleGroupDetailScreen} />
+      <Stack.Screen name="ActiveWorkout" component={ActiveWorkoutScreen} options={{ presentation: 'fullScreenModal' }} />
     </Stack.Navigator>
   );
 }

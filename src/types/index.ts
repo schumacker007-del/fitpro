@@ -34,9 +34,27 @@ export interface ExerciseStep {
   reps: string;
   restSeconds: number;
   instructions: string[];
+  /** Pontos-chave de postura, respiração e alinhamento (checklist guiado — Pro). */
+  postureTips: string[];
+  /** Erros comuns de execução a evitar (Pro). */
+  commonMistakes: string[];
   animation: 'squat' | 'pushup' | 'jump' | 'lunge' | 'plank' | 'row' | 'curl' | 'stretch';
   tier: PlanTier;
 }
+
+/** Percepção Subjetiva de Esforço (RPE), de 1 (muito fácil) a 10 (esforço máximo). */
+export type RpeScore = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
+
+export interface TrainingLogEntry {
+  id: string;
+  exerciseId: string;
+  exerciseName: string;
+  workoutId: string;
+  rpe: RpeScore;
+  dateISO: string;
+}
+
+export type LoadSuggestion = 'increase_load' | 'more_rest' | 'maintain';
 
 export interface WorkoutPlan {
   id: string;

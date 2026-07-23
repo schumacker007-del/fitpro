@@ -6,6 +6,7 @@ export type WorkoutsStackParamList = {
   ExerciseDetail: { workoutId: string; exerciseId: string };
   MuscleGroups: undefined;
   MuscleGroupDetail: { muscleGroupId: MuscleGroupId };
+  ActiveWorkout: { workoutId: string };
 };
 
 export type ProfileStackParamList = {

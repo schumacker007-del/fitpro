@@ -6,7 +6,9 @@ import { ScrollView, StyleSheet, Text, View, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BodyMap from '../components/BodyMap';
 import ExerciseAnimation from '../components/ExerciseAnimation';
-import { Card, Pill } from '../components/ui';
+import { Card, Pill, PrimaryButton } from '../components/ui';
+import { useTrainingLog } from '../context/TrainingLogContext';
+import { useUser } from '../context/UserContext';
 import { getMuscleGroup } from '../data/muscleGroups';
 import { WORKOUTS } from '../data/workouts';
 import { WorkoutsStackParamList } from '../navigation/types';
@@ -15,10 +17,15 @@ import { colors, spacing, typography } from '../theme';
 export default function ExerciseDetailScreen() {
   const route = useRoute<RouteProp<WorkoutsStackParamList, 'ExerciseDetail'>>();
   const navigation = useNavigation<NativeStackNavigationProp<WorkoutsStackParamList, 'ExerciseDetail'>>();
+  const { planTier } = useUser();
+  const { getSuggestion } = useTrainingLog();
   const workout = WORKOUTS.find((w) => w.id === route.params.workoutId);
   const exercise = workout?.exercises.find((e) => e.id === route.params.exerciseId);
 
   if (!workout || !exercise) return null;
+
+  const isPro = planTier === 'pro';
+  const suggestion = getSuggestion(exercise.id);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -71,6 +78,70 @@ export default function ExerciseDetailScreen() {
           ))}
         </Card>
 
+        {suggestion && suggestion.suggestion !== 'maintain' ? (
+          <Card
+            style={[
+              styles.suggestionCard,
+              { borderColor: suggestion.suggestion === 'increase_load' ? colors.primary : colors.danger },
+            ]}
+          >
+            <Ionicons
+              name={suggestion.suggestion === 'increase_load' ? 'trending-up' : 'alert-circle'}
+              size={18}
+              color={suggestion.suggestion === 'increase_load' ? colors.primary : colors.danger}
+            />
+            <Text style={styles.suggestionText}>
+              {suggestion.suggestion === 'increase_load'
+                ? `RPE médio recente: ${suggestion.avgRpe.toFixed(1)} — esforço baixo, considere aumentar a carga.`
+                : `RPE médio recente: ${suggestion.avgRpe.toFixed(1)} — esforço alto, considere descansar mais.`}
+            </Text>
+          </Card>
+        ) : null}
+
+        {isPro ? (
+          <>
+            <Card style={{ marginTop: spacing.md }}>
+              <View style={styles.checklistHeader}>
+                <Ionicons name="body" size={16} color={colors.primary} />
+                <Text style={styles.sectionLabel}>Postura, respiração e alinhamento</Text>
+              </View>
+              {exercise.postureTips.map((tip, i) => (
+                <View key={i} style={styles.checkRow}>
+                  <Ionicons name="checkmark-circle" size={16} color={colors.primary} />
+                  <Text style={styles.checkText}>{tip}</Text>
+                </View>
+              ))}
+            </Card>
+
+            <Card style={{ marginTop: spacing.md }}>
+              <View style={styles.checklistHeader}>
+                <Ionicons name="warning" size={16} color={colors.danger} />
+                <Text style={styles.sectionLabel}>Erros comuns a evitar</Text>
+              </View>
+              {exercise.commonMistakes.map((mistake, i) => (
+                <View key={i} style={styles.checkRow}>
+                  <Ionicons name="close-circle" size={16} color={colors.danger} />
+                  <Text style={styles.checkText}>{mistake}</Text>
+                </View>
+              ))}
+            </Card>
+          </>
+        ) : (
+          <Card style={styles.teaserCard}>
+            <Ionicons name="lock-closed" size={20} color={colors.gold} />
+            <Text style={styles.teaserTitle}>Checklist guiado de postura no Pro</Text>
+            <Text style={styles.teaserSubtitle}>
+              Pontos-chave de postura/respiração e erros comuns a evitar em cada exercício.
+            </Text>
+            <PrimaryButton
+              label="Ver plano Pro"
+              icon="star"
+              variant="gold"
+              onPress={() => (navigation.getParent() as any)?.navigate('Perfil', { screen: 'Paywall' })}
+            />
+          </Card>
+        )}
+
         <Text style={styles.tip}>
           💡 A animação acima ilustra o padrão de movimento. Ajuste carga e amplitude conforme sua mobilidade.
         </Text>
@@ -119,4 +190,12 @@ const styles = StyleSheet.create({
   stepBadgeText: { color: '#0B1210', fontWeight: '800', fontSize: 12 },
   stepText: { color: colors.text, flex: 1, lineHeight: 20 },
   tip: { color: colors.textMuted, fontSize: 13, marginTop: spacing.lg, textAlign: 'center', lineHeight: 18 },
+  suggestionCard: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: spacing.md, borderWidth: 1 },
+  suggestionText: { color: colors.text, flex: 1, fontSize: 12, lineHeight: 17 },
+  checklistHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 },
+  checkRow: { flexDirection: 'row', gap: 8, marginBottom: 8, alignItems: 'flex-start' },
+  checkText: { color: colors.text, flex: 1, fontSize: 13, lineHeight: 19 },
+  teaserCard: { alignItems: 'center', gap: 6, marginTop: spacing.md },
+  teaserTitle: { color: colors.text, fontWeight: '800', fontSize: 14, textAlign: 'center', marginTop: 4 },
+  teaserSubtitle: { color: colors.textMuted, fontSize: 12, textAlign: 'center', marginBottom: spacing.sm },
 });

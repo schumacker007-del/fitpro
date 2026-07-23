@@ -9,11 +9,22 @@ para rodar no seu iPhone via Expo Go (e futuramente publicar na App Store).
 - **Cálculo automático de IMC** a partir dos dados informados.
 - **Treinos com animação demonstrativa** de como executar cada exercício (ilustração vetorial animada,
   sem depender de vídeos externos), com séries, repetições e tempo de descanso.
+- **Mapa muscular (BodyMap)**: busca de exercícios por grupo muscular, com silhueta do corpo destacando
+  a região trabalhada.
+- **Checklist de postura e execução guiada (Pro)**: pontos-chave de postura/respiração/alinhamento e
+  erros comuns a evitar em cada exercício.
+- **Modo Treino Ativo (Pro)**: fluxo guiado por todo o treino, com timer de descanso (vibração + haptics
+  ao final), contagem de séries e coleta de RPE (esforço percebido 1-10) ao final de cada exercício.
+- **Progressão inteligente de carga (Pro)**: histórico de RPE com gráfico de evolução e sugestões
+  automáticas ("aumente a carga" / "descanse mais") no Perfil e na tela de cada exercício.
 - **Dietas por objetivo**: versão gratuita com orientação geral e versão Pro com plano semanal detalhado.
-- **Responsável técnico**: seção com o educador físico responsável, credencial (CREF) e disclaimer de
-  que o app não substitui avaliação médica/profissional individual.
+- **Responsável técnico**: seção com o educador físico responsável, credencial (CREF) — exibida também
+  na ficha de cada treino — e disclaimer de que o app não substitui avaliação médica/profissional individual.
 - **Plano Free x Pro (paywall)**: tela comparando os dois planos, com assinatura mensal/anual
   (atualmente **simulada** — ver seção "Pagamentos" abaixo).
+
+> Fora do escopo (por decisão de produto): gravação/armazenamento de vídeo do usuário, para evitar alto
+> consumo de armazenamento, complexidade de permissões de câmera e riscos jurídicos de dados sensíveis.
 
 ## Como rodar no seu iPhone
 

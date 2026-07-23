@@ -5,8 +5,9 @@ import React from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ExerciseAnimation from '../components/ExerciseAnimation';
-import { Card, Pill, PrimaryButton, ProBadge } from '../components/ui';
+import { Card, Pill, PrimaryButton } from '../components/ui';
 import { useUser } from '../context/UserContext';
+import { RESPONSIBLE_PROFESSIONAL } from '../data/professional';
 import { WORKOUTS } from '../data/workouts';
 import { WorkoutsStackParamList } from '../navigation/types';
 import { colors, spacing, typography } from '../theme';
@@ -50,6 +51,38 @@ export default function WorkoutDetailScreen() {
           data={workout.exercises}
           keyExtractor={(e) => e.id}
           contentContainerStyle={styles.list}
+          ListHeaderComponent={
+            <View style={{ marginBottom: spacing.md }}>
+              <Pressable
+                onPress={() =>
+                  planTier === 'pro'
+                    ? navigation.navigate('ActiveWorkout', { workoutId: workout.id })
+                    : (navigation.getParent() as any)?.navigate('Perfil', { screen: 'Paywall' })
+                }
+              >
+                <Card style={styles.startCard}>
+                  <View style={styles.startIconWrap}>
+                    <Ionicons name={planTier === 'pro' ? 'play' : 'lock-closed'} size={20} color="#0B1210" />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.startTitle}>
+                      {planTier === 'pro' ? 'Iniciar treino guiado' : 'Modo Treino Ativo (Pro)'}
+                    </Text>
+                    <Text style={styles.startSubtitle}>
+                      Timer de descanso, esforço (RPE) e progressão de carga automática.
+                    </Text>
+                  </View>
+                </Card>
+              </Pressable>
+
+              <View style={styles.credentialRow}>
+                <Ionicons name="ribbon-outline" size={14} color={colors.primary} />
+                <Text style={styles.credentialText}>
+                  Ficha revisada por {RESPONSIBLE_PROFESSIONAL.name} · {RESPONSIBLE_PROFESSIONAL.credential}
+                </Text>
+              </View>
+            </View>
+          }
           renderItem={({ item, index }) => (
             <Pressable
               onPress={() => navigation.navigate('ExerciseDetail', { workoutId: workout.id, exerciseId: item.id })}
@@ -100,4 +133,17 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
     lineHeight: 20,
   },
+  startCard: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, backgroundColor: colors.gold, borderColor: colors.gold },
+  startIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(11,18,16,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  startTitle: { color: '#0B1210', fontWeight: '800', fontSize: 14 },
+  startSubtitle: { color: '#0B1210', fontSize: 11, marginTop: 2, opacity: 0.85 },
+  credentialRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: spacing.sm, paddingHorizontal: 2 },
+  credentialText: { color: colors.textMuted, fontSize: 11, flex: 1 },
 });

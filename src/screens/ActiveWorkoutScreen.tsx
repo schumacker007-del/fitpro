@@ -11,6 +11,7 @@ import RestTimer from '../components/RestTimer';
 import RpeSelector from '../components/RpeSelector';
 import { Card, PrimaryButton } from '../components/ui';
 import { useTrainingLog } from '../context/TrainingLogContext';
+import { getMuscleGroup } from '../data/muscleGroups';
 import { WORKOUTS } from '../data/workouts';
 import { WorkoutsStackParamList } from '../navigation/types';
 import { colors, spacing, typography } from '../theme';
@@ -86,7 +87,11 @@ export default function ActiveWorkoutScreen() {
           <>
             <Text style={styles.exerciseName}>{exercise.name}</Text>
             <View style={styles.demoRow}>
-              <ExerciseAnimation kind={exercise.animation} size={170} />
+              <ExerciseAnimation
+                kind={exercise.animation}
+                size={170}
+                highlightColor={getMuscleGroup(exercise.primaryMuscles[0]).color}
+              />
               <BodyMap highlighted={exercise.primaryMuscles} size={95} />
             </View>
             <Card style={styles.setCard}>

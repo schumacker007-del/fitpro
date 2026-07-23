@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import ExerciseAnimation from '../components/ExerciseAnimation';
 import { Card, Pill, PrimaryButton } from '../components/ui';
 import { useUser } from '../context/UserContext';
+import { getMuscleGroup } from '../data/muscleGroups';
 import { RESPONSIBLE_PROFESSIONAL } from '../data/professional';
 import { WORKOUTS } from '../data/workouts';
 import { WorkoutsStackParamList } from '../navigation/types';
@@ -89,7 +90,11 @@ export default function WorkoutDetailScreen() {
             >
               <Card style={styles.exerciseCard}>
                 <View style={styles.exerciseThumb}>
-                  <ExerciseAnimation kind={item.animation} size={64} />
+                  <ExerciseAnimation
+                    kind={item.animation}
+                    size={64}
+                    highlightColor={getMuscleGroup(item.primaryMuscles[0]).color}
+                  />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.exerciseIndex}>Exercício {index + 1}</Text>

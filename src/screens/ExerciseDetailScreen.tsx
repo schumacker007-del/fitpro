@@ -40,7 +40,11 @@ export default function ExerciseDetailScreen() {
       </View>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.demoRow}>
-          <ExerciseAnimation kind={exercise.animation} size={180} />
+          <ExerciseAnimation
+            kind={exercise.animation}
+            size={180}
+            highlightColor={getMuscleGroup(exercise.primaryMuscles[0]).color}
+          />
           <BodyMap highlighted={exercise.primaryMuscles} size={100} />
         </View>
 

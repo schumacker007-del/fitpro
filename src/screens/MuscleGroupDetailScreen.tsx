@@ -51,7 +51,7 @@ export default function MuscleGroupDetailScreen() {
             >
               <Card style={styles.exerciseCard}>
                 <View style={styles.thumb}>
-                  <ExerciseAnimation kind={item.animation} size={64} />
+                  <ExerciseAnimation kind={item.animation} size={64} highlightColor={info.color} />
                 </View>
                 <View style={{ flex: 1 }}>
                   <View style={styles.titleRow}>

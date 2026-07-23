@@ -106,7 +106,12 @@ export type AnimationKind =
   | 'burpee'
   | 'jumping_jack'
   | 'mountain_climber'
-  | 'kb_swing';
+  | 'kb_swing'
+  | 'treadmill'
+  | 'bike'
+  | 'elliptical'
+  | 'rowing_machine'
+  | 'stair_climber';
 
 /** Percepção Subjetiva de Esforço (RPE), de 1 (muito fácil) a 10 (esforço máximo). */
 export type RpeScore = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;

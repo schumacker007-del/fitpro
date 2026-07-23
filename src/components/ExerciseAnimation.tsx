@@ -67,6 +67,11 @@ const POSE_WORK: Record<AnimationKind, any> = {
   jumping_jack: require('../../assets/poses/jumping_jack.png'),
   mountain_climber: require('../../assets/poses/mountain_climber.png'),
   kb_swing: require('../../assets/poses/kb_swing.png'),
+  treadmill: require('../../assets/poses/treadmill.png'),
+  bike: require('../../assets/poses/bike.png'),
+  elliptical: require('../../assets/poses/elliptical.png'),
+  rowing_machine: require('../../assets/poses/rowing_machine.png'),
+  stair_climber: require('../../assets/poses/stair_climber.png'),
 };
 
 // Pose "de partida" (retorno / preparação). Isométricos (plank) não têm segunda pose.
@@ -121,6 +126,11 @@ const POSE_REST: Partial<Record<AnimationKind, any>> = {
   jumping_jack: require('../../assets/poses/jumping_jack_2.png'),
   mountain_climber: require('../../assets/poses/mountain_climber_2.png'),
   kb_swing: require('../../assets/poses/kb_swing_2.png'),
+  treadmill: require('../../assets/poses/treadmill_2.png'),
+  bike: require('../../assets/poses/bike_2.png'),
+  elliptical: require('../../assets/poses/elliptical_2.png'),
+  rowing_machine: require('../../assets/poses/rowing_machine_2.png'),
+  stair_climber: require('../../assets/poses/stair_climber_2.png'),
   // plank_side é isométrico (sem segunda pose), como o plank comum.
 };
 
@@ -178,6 +188,11 @@ const GLOW_BOX: Record<AnimationKind, { x: number; y: number; w: number; h: numb
   jumping_jack: { x: 0.2, y: 0.1, w: 0.6, h: 0.7 },
   mountain_climber: { x: 0.1, y: 0.3, w: 0.7, h: 0.4 },
   kb_swing: { x: 0.24, y: 0.16, w: 0.5, h: 0.6 },
+  treadmill: { x: 0.24, y: 0.3, w: 0.55, h: 0.5 },
+  bike: { x: 0.14, y: 0.3, w: 0.5, h: 0.45 },
+  elliptical: { x: 0.2, y: 0.35, w: 0.55, h: 0.45 },
+  rowing_machine: { x: 0.06, y: 0.3, w: 0.55, h: 0.4 },
+  stair_climber: { x: 0.28, y: 0.2, w: 0.5, h: 0.55 },
 };
 
 export default function ExerciseAnimation({ kind, size = 220, highlightColor }: Props) {

@@ -18,6 +18,7 @@ const FEATURES: { label: string; free: boolean; pro: boolean }[] = [
   { label: 'Acompanhamento supervisionado por Educador Físico', free: false, pro: true },
   { label: 'Monte seu próprio treino (com seu professor ou do seu jeito)', free: false, pro: true },
   { label: 'Treino sob medida (semanal ou mensal) via professor do FitPro', free: false, pro: true },
+  { label: 'Fotos de evolução com linha do tempo e comparação', free: false, pro: true },
   { label: 'Sem anúncios e novidades em primeira mão', free: false, pro: true },
 ];
 

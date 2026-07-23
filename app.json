@@ -10,7 +10,12 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.fitpro.app"
+      "bundleIdentifier": "com.fitpro.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "O FitPro usa a câmera para registrar suas fotos de evolução física.",
+        "NSPhotoLibraryUsageDescription": "O FitPro acessa suas fotos para você anexar fotos de evolução física.",
+        "NSPhotoLibraryAddUsageDescription": "O FitPro pode salvar suas fotos de evolução na galeria."
+      }
     },
     "android": {
       "package": "com.fitpro.app",
@@ -24,6 +29,15 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "O FitPro acessa suas fotos para você anexar fotos de evolução física.",
+          "cameraPermission": "O FitPro usa a câmera para registrar suas fotos de evolução física."
+        }
+      ]
+    ]
   }
 }

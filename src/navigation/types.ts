@@ -15,6 +15,7 @@ export type ProfileStackParamList = {
   Profile: undefined;
   Paywall: undefined;
   CustomPlan: undefined;
+  ProgressPhotos: undefined;
 };
 
 export type MainTabParamList = {

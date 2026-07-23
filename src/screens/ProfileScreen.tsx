@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import ProgressChart from '../components/ProgressChart';
 import { Card, Pill, PrimaryButton, SectionTitle } from '../components/ui';
 import { useCustomPlan } from '../context/CustomPlanContext';
+import { useProgressPhotos } from '../context/ProgressPhotoContext';
 import { useTrainingLog } from '../context/TrainingLogContext';
 import { useUser } from '../context/UserContext';
 import { RESPONSIBLE_PROFESSIONAL } from '../data/professional';
@@ -18,6 +19,8 @@ export default function ProfileScreen() {
   const { profile, planTier, bmi, downgradeToFree, resetProfile } = useUser();
   const { logs, getSuggestion } = useTrainingLog();
   const { latestRequest } = useCustomPlan();
+  const { photos } = useProgressPhotos();
+  const photoCount = photos.length;
 
   const recentExerciseIds = Array.from(new Set(logs.map((l) => l.exerciseId))).slice(0, 3);
 
@@ -143,6 +146,34 @@ export default function ProfileScreen() {
             <Text style={styles.teaserTitle}>Treino sob medida no Pro</Text>
             <Text style={styles.teaserSubtitle}>
               Peça uma ficha semanal ou mensal montada manualmente pelo seu professor, em vez de um treino genérico.
+            </Text>
+            <PrimaryButton label="Ver plano Pro" icon="star" variant="gold" onPress={() => navigation.navigate('Paywall')} />
+          </Card>
+        )}
+
+        <SectionTitle title="Fotos de evolução" subtitle="Registre fotos periódicas e compare sua transformação" />
+        {planTier === 'pro' ? (
+          <Card>
+            <Text style={styles.planDesc}>
+              {photoCount > 0
+                ? `${photoCount} foto(s) registrada(s). Compare lado a lado ou envie para seu professor.`
+                : 'Tire uma foto agora para começar a acompanhar sua evolução física.'}
+            </Text>
+            <View style={{ marginTop: spacing.md }}>
+              <PrimaryButton
+                label={photoCount > 0 ? 'Ver minhas fotos' : 'Registrar primeira foto'}
+                icon="camera-outline"
+                variant="outline"
+                onPress={() => navigation.navigate('ProgressPhotos')}
+              />
+            </View>
+          </Card>
+        ) : (
+          <Card style={styles.teaserCard}>
+            <Ionicons name="lock-closed" size={20} color={colors.gold} />
+            <Text style={styles.teaserTitle}>Fotos de evolução no Pro</Text>
+            <Text style={styles.teaserSubtitle}>
+              Registre fotos periódicas, compare antes/depois e envie diretamente para seu professor.
             </Text>
             <PrimaryButton label="Ver plano Pro" icon="star" variant="gold" onPress={() => navigation.navigate('Paywall')} />
           </Card>

@@ -131,6 +131,16 @@ export interface CustomPlanRequest {
   createdAtISO: string;
 }
 
+/** Foto de evolução física registrada pelo aluno (feature Pro). */
+export interface ProgressPhoto {
+  id: string;
+  /** Caminho local (FileSystem) da imagem, copiada para armazenamento permanente do app. */
+  uri: string;
+  dateISO: string;
+  weightKg?: number;
+  note?: string;
+}
+
 export interface WorkoutPlan {
   id: string;
   title: string;

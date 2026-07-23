@@ -20,6 +20,12 @@ para rodar no seu iPhone via Expo Go (e futuramente publicar na App Store).
 - **Dietas por objetivo**: versão gratuita com orientação geral e versão Pro com plano semanal detalhado.
 - **Responsável técnico**: seção com o educador físico responsável, credencial (CREF) — exibida também
   na ficha de cada treino — e disclaimer de que o app não substitui avaliação médica/profissional individual.
+- **Biblioteca completa de exercícios (55 exercícios / 9 grupos musculares)**: peito, costas, ombros,
+  bíceps, tríceps, quadríceps, posterior de coxa/glúteos, panturrilha e abdômen/core, com instruções,
+  postura e erros comuns em cada um.
+- **Treino sob medida (Pro)**: o aluno solicita uma ficha semanal ou mensal personalizada (objetivo, dias
+  disponíveis, equipamentos e restrições/lesões), enviada direto pelo WhatsApp para o professor responsável
+  montar manualmente — em vez de receber só um treino genérico.
 - **Plano Free x Pro (paywall)**: tela comparando os dois planos, com assinatura mensal/anual
   (atualmente **simulada** — ver seção "Pagamentos" abaixo).
 

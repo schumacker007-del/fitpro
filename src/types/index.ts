@@ -94,7 +94,10 @@ export type AnimationKind =
   | 'calf_raise_seated'
   | 'calf_raise_legpress'
   | 'crunch_oblique'
-  | 'crunch_cable';
+  | 'crunch_cable'
+  | 'pullover'
+  | 'step_up'
+  | 'plank_side';
 
 /** Percepção Subjetiva de Esforço (RPE), de 1 (muito fácil) a 10 (esforço máximo). */
 export type RpeScore = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;

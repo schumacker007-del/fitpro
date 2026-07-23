@@ -57,6 +57,9 @@ const POSE_WORK: Record<AnimationKind, any> = {
   calf_raise_legpress: require('../../assets/poses/calf_raise_legpress.png'),
   crunch_oblique: require('../../assets/poses/crunch_oblique.png'),
   crunch_cable: require('../../assets/poses/crunch_cable.png'),
+  pullover: require('../../assets/poses/pullover.png'),
+  step_up: require('../../assets/poses/step_up.png'),
+  plank_side: require('../../assets/poses/plank_side.png'),
 };
 
 // Pose "de partida" (retorno / preparação). Isométricos (plank) não têm segunda pose.
@@ -102,6 +105,9 @@ const POSE_REST: Partial<Record<AnimationKind, any>> = {
   calf_raise_legpress: require('../../assets/poses/calf_raise_legpress_2.png'),
   crunch_oblique: require('../../assets/poses/crunch_oblique_2.png'),
   crunch_cable: require('../../assets/poses/crunch_cable_2.png'),
+  pullover: require('../../assets/poses/pullover_2.png'),
+  step_up: require('../../assets/poses/step_up_2.png'),
+  // plank_side é isométrico (sem segunda pose), como o plank comum.
 };
 
 // Região aproximada (fração 0-1 da imagem) do músculo em destaque em cada pose.
@@ -148,6 +154,9 @@ const GLOW_BOX: Record<AnimationKind, { x: number; y: number; w: number; h: numb
   calf_raise_legpress: { x: 0.3, y: 0.6, w: 0.4, h: 0.3 },
   crunch_oblique: { x: 0.2, y: 0.36, w: 0.52, h: 0.32 },
   crunch_cable: { x: 0.28, y: 0.28, w: 0.44, h: 0.4 },
+  pullover: { x: 0.28, y: 0.24, w: 0.44, h: 0.32 },
+  step_up: { x: 0.06, y: 0.4, w: 0.5, h: 0.42 },
+  plank_side: { x: 0.28, y: 0.28, w: 0.5, h: 0.34 },
 };
 
 export default function ExerciseAnimation({ kind, size = 220, highlightColor }: Props) {

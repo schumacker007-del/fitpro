@@ -111,7 +111,15 @@ export type AnimationKind =
   | 'bike'
   | 'elliptical'
   | 'rowing_machine'
-  | 'stair_climber';
+  | 'stair_climber'
+  | 'stretch_hamstring'
+  | 'stretch_quad'
+  | 'stretch_calf'
+  | 'stretch_chest'
+  | 'stretch_shoulder'
+  | 'stretch_triceps'
+  | 'stretch_catcow'
+  | 'stretch_glute';
 
 /** Percepção Subjetiva de Esforço (RPE), de 1 (muito fácil) a 10 (esforço máximo). */
 export type RpeScore = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;

@@ -72,6 +72,14 @@ const POSE_WORK: Record<AnimationKind, any> = {
   elliptical: require('../../assets/poses/elliptical.png'),
   rowing_machine: require('../../assets/poses/rowing_machine.png'),
   stair_climber: require('../../assets/poses/stair_climber.png'),
+  stretch_hamstring: require('../../assets/poses/stretch_hamstring.png'),
+  stretch_quad: require('../../assets/poses/stretch_quad.png'),
+  stretch_calf: require('../../assets/poses/stretch_calf.png'),
+  stretch_chest: require('../../assets/poses/stretch_chest.png'),
+  stretch_shoulder: require('../../assets/poses/stretch_shoulder.png'),
+  stretch_triceps: require('../../assets/poses/stretch_triceps.png'),
+  stretch_catcow: require('../../assets/poses/stretch_catcow.png'),
+  stretch_glute: require('../../assets/poses/stretch_glute.png'),
 };
 
 // Pose "de partida" (retorno / preparação). Isométricos (plank) não têm segunda pose.
@@ -193,6 +201,14 @@ const GLOW_BOX: Record<AnimationKind, { x: number; y: number; w: number; h: numb
   elliptical: { x: 0.2, y: 0.35, w: 0.55, h: 0.45 },
   rowing_machine: { x: 0.06, y: 0.3, w: 0.55, h: 0.4 },
   stair_climber: { x: 0.28, y: 0.2, w: 0.5, h: 0.55 },
+  stretch_hamstring: { x: 0.1, y: 0.45, w: 0.5, h: 0.35 },
+  stretch_quad: { x: 0.42, y: 0.4, w: 0.4, h: 0.4 },
+  stretch_calf: { x: 0.36, y: 0.55, w: 0.38, h: 0.35 },
+  stretch_chest: { x: 0.24, y: 0.2, w: 0.5, h: 0.32 },
+  stretch_shoulder: { x: 0.3, y: 0.14, w: 0.46, h: 0.3 },
+  stretch_triceps: { x: 0.28, y: 0.08, w: 0.4, h: 0.34 },
+  stretch_catcow: { x: 0.24, y: 0.22, w: 0.52, h: 0.4 },
+  stretch_glute: { x: 0.2, y: 0.4, w: 0.5, h: 0.38 },
 };
 
 export default function ExerciseAnimation({ kind, size = 220, highlightColor }: Props) {

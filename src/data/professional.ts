@@ -2,6 +2,8 @@ export const RESPONSIBLE_PROFESSIONAL = {
   name: 'Prof. Camila Andrade',
   role: 'Educadora Física responsável técnica',
   credential: 'CREF 000000-G/SP',
+  /** Número usado para enviar a solicitação de treino sob medida via WhatsApp (formato E.164, só dígitos). */
+  whatsapp: '5511900000000',
   bio:
     'Graduada em Educação Física, responsável por revisar e validar os treinos e orientações ' +
     'nutricionais gerais oferecidos no FitPro. Os planos são baseados em diretrizes gerais de ' +

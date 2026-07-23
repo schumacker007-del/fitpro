@@ -84,6 +84,27 @@ export interface TrainingLogEntry {
 
 export type LoadSuggestion = 'increase_load' | 'more_rest' | 'maintain';
 
+/** Periodicidade da ficha de treino personalizada montada pelo professor (Pro). */
+export type PlanFrequency = 'semanal' | 'mensal';
+
+export type TrainingPlace = 'casa' | 'academia' | 'ambos';
+
+export type CustomPlanStatus = 'pendente' | 'em_producao' | 'entregue';
+
+/** Solicitação de treino sob medida, montado manualmente pelo professor responsável (feature Pro). */
+export interface CustomPlanRequest {
+  id: string;
+  frequency: PlanFrequency;
+  goal: Goal;
+  daysPerWeek: number;
+  trainingPlace: TrainingPlace;
+  equipment: string[];
+  restrictions: string;
+  notes: string;
+  status: CustomPlanStatus;
+  createdAtISO: string;
+}
+
 export interface WorkoutPlan {
   id: string;
   title: string;

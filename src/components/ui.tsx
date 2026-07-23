@@ -73,6 +73,25 @@ export function Pill({ label, tone = 'default' }: { label: string; tone?: 'defau
   );
 }
 
+export function SelectableChip({
+  label,
+  selected,
+  onPress,
+}: {
+  label: string;
+  selected: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={[styles.chip, selected ? styles.chipSelected : null]}
+    >
+      <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{label}</Text>
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
@@ -120,5 +139,25 @@ const styles = StyleSheet.create({
   pillText: {
     fontSize: 12,
     fontWeight: '700',
+  },
+  chip: {
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surfaceAlt,
+  },
+  chipSelected: {
+    backgroundColor: 'rgba(52,211,153,0.15)',
+    borderColor: colors.primary,
+  },
+  chipText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.textMuted,
+  },
+  chipTextSelected: {
+    color: colors.primary,
   },
 });

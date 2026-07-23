@@ -1,5 +1,6 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
+import CustomPlanScreen from '../screens/CustomPlanScreen';
 import PaywallScreen from '../screens/PaywallScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import { ProfileStackParamList } from './types';
@@ -11,6 +12,7 @@ export default function ProfileNavigator() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Profile" component={ProfileScreen} />
       <Stack.Screen name="Paywall" component={PaywallScreen} options={{ presentation: 'modal' }} />
+      <Stack.Screen name="CustomPlan" component={CustomPlanScreen} options={{ presentation: 'modal' }} />
     </Stack.Navigator>
   );
 }

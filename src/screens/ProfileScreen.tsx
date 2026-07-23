@@ -6,6 +6,7 @@ import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ProgressChart from '../components/ProgressChart';
 import { Card, Pill, PrimaryButton, SectionTitle } from '../components/ui';
+import { useCustomPlan } from '../context/CustomPlanContext';
 import { useTrainingLog } from '../context/TrainingLogContext';
 import { useUser } from '../context/UserContext';
 import { RESPONSIBLE_PROFESSIONAL } from '../data/professional';
@@ -16,6 +17,7 @@ export default function ProfileScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<ProfileStackParamList, 'Profile'>>();
   const { profile, planTier, bmi, downgradeToFree, resetProfile } = useUser();
   const { logs, getSuggestion } = useTrainingLog();
+  const { latestRequest } = useCustomPlan();
 
   const recentExerciseIds = Array.from(new Set(logs.map((l) => l.exerciseId))).slice(0, 3);
 
@@ -110,6 +112,42 @@ export default function ProfileScreen() {
           </Card>
         )}
 
+        <SectionTitle title="Treino sob medida" subtitle="Ficha semanal ou mensal montada à mão pelo seu professor" />
+        {planTier === 'pro' ? (
+          <Card>
+            {latestRequest ? (
+              <View style={styles.customPlanStatusRow}>
+                <Ionicons name="time-outline" size={16} color={statusColor(latestRequest.status)} />
+                <Text style={[styles.customPlanStatusText, { color: statusColor(latestRequest.status) }]}>
+                  {statusLabel(latestRequest.status)}
+                </Text>
+              </View>
+            ) : (
+              <Text style={styles.planDesc}>
+                Conte seus dias disponíveis, objetivo e restrições — {RESPONSIBLE_PROFESSIONAL.name.replace('Prof. ', '')}{' '}
+                monta sua ficha e te envia de volta.
+              </Text>
+            )}
+            <View style={{ marginTop: spacing.md }}>
+              <PrimaryButton
+                label={latestRequest ? 'Solicitar nova ficha' : 'Solicitar treino personalizado'}
+                icon="paper-plane"
+                variant="outline"
+                onPress={() => navigation.navigate('CustomPlan')}
+              />
+            </View>
+          </Card>
+        ) : (
+          <Card style={styles.teaserCard}>
+            <Ionicons name="lock-closed" size={20} color={colors.gold} />
+            <Text style={styles.teaserTitle}>Treino sob medida no Pro</Text>
+            <Text style={styles.teaserSubtitle}>
+              Peça uma ficha semanal ou mensal montada manualmente pelo seu professor, em vez de um treino genérico.
+            </Text>
+            <PrimaryButton label="Ver plano Pro" icon="star" variant="gold" onPress={() => navigation.navigate('Paywall')} />
+          </Card>
+        )}
+
         <SectionTitle title="Responsável técnico" />
         <Card>
           <View style={styles.proRow}>
@@ -153,6 +191,18 @@ function StatBox({ label, value }: { label: string; value: string }) {
   );
 }
 
+function statusLabel(status: string) {
+  if (status === 'pendente') return 'Aguardando seu professor montar o treino';
+  if (status === 'em_producao') return 'Seu professor está montando seu treino';
+  return 'Treino entregue pelo professor';
+}
+
+function statusColor(status: string) {
+  if (status === 'entregue') return colors.primary;
+  if (status === 'em_producao') return colors.gold;
+  return colors.textMuted;
+}
+
 function goalLabel(goal?: string) {
   if (goal === 'perder_peso') return 'Objetivo: perder peso';
   if (goal === 'ganhar_massa') return 'Objetivo: ganhar massa';
@@ -180,6 +230,8 @@ const styles = StyleSheet.create({
   statLabel: { color: colors.textMuted, fontSize: 10, marginTop: 2 },
   planTitle: { color: colors.text, fontWeight: '800', fontSize: 15, marginBottom: 6 },
   planDesc: { color: colors.textMuted, fontSize: 13, lineHeight: 19 },
+  customPlanStatusRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  customPlanStatusText: { fontWeight: '700', fontSize: 13, flex: 1 },
   proRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.sm },
   proAvatar: {
     width: 44,

@@ -12,6 +12,7 @@ export type WorkoutsStackParamList = {
 export type ProfileStackParamList = {
   Profile: undefined;
   Paywall: undefined;
+  CustomPlan: undefined;
 };
 
 export type MainTabParamList = {

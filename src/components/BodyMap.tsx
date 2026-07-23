@@ -87,7 +87,8 @@ interface Props {
 
 export default function BodyMap({ highlighted, size = 140, view, zoom = true }: Props) {
   const pulse = useRef(new Animated.Value(0)).current;
-  const isIconOnly = highlighted.length > 0 && highlighted.every((g) => g === 'cardio' || g === 'mobilidade');
+  const isIconOnly =
+    highlighted.length > 0 && highlighted.every((g) => g === 'cardio' || g === 'mobilidade' || g === 'funcional');
   const resolvedView =
     view ?? (coverage(BACK_REGIONS, highlighted) > coverage(FRONT_REGIONS, highlighted) ? 'back' : 'front');
   const regions = resolvedView === 'back' ? BACK_REGIONS : FRONT_REGIONS;
@@ -168,7 +169,11 @@ export default function BodyMap({ highlighted, size = 140, view, zoom = true }: 
 
       {isIconOnly ? (
         <Animated.View style={[styles.iconBadge, { opacity: glowOpacity, backgroundColor: primaryColor }]}>
-          <Ionicons name={highlighted.includes('cardio') ? 'heart' : 'sparkles'} size={size * 0.16} color="#0B1210" />
+          <Ionicons
+            name={highlighted.includes('cardio') ? 'heart' : highlighted.includes('funcional') ? 'flash' : 'sparkles'}
+            size={size * 0.16}
+            color="#0B1210"
+          />
         </Animated.View>
       ) : null}
     </View>

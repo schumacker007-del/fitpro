@@ -15,6 +15,7 @@ export type MuscleGroupId =
   | 'quadriceps'
   | 'posterior_gluteos'
   | 'panturrilha'
+  | 'funcional'
   | 'cardio'
   | 'mobilidade';
 
@@ -101,7 +102,11 @@ export type AnimationKind =
   | 'plank_side'
   | 'wrist_curl'
   | 'wrist_roller'
-  | 'pistol_squat';
+  | 'pistol_squat'
+  | 'burpee'
+  | 'jumping_jack'
+  | 'mountain_climber'
+  | 'kb_swing';
 
 /** Percepção Subjetiva de Esforço (RPE), de 1 (muito fácil) a 10 (esforço máximo). */
 export type RpeScore = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;

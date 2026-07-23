@@ -63,6 +63,10 @@ const POSE_WORK: Record<AnimationKind, any> = {
   wrist_curl: require('../../assets/poses/wrist_curl.png'),
   wrist_roller: require('../../assets/poses/wrist_roller.png'),
   pistol_squat: require('../../assets/poses/pistol_squat.png'),
+  burpee: require('../../assets/poses/burpee.png'),
+  jumping_jack: require('../../assets/poses/jumping_jack.png'),
+  mountain_climber: require('../../assets/poses/mountain_climber.png'),
+  kb_swing: require('../../assets/poses/kb_swing.png'),
 };
 
 // Pose "de partida" (retorno / preparação). Isométricos (plank) não têm segunda pose.
@@ -113,6 +117,10 @@ const POSE_REST: Partial<Record<AnimationKind, any>> = {
   wrist_curl: require('../../assets/poses/wrist_curl_2.png'),
   wrist_roller: require('../../assets/poses/wrist_roller_2.png'),
   pistol_squat: require('../../assets/poses/pistol_squat_2.png'),
+  burpee: require('../../assets/poses/burpee_2.png'),
+  jumping_jack: require('../../assets/poses/jumping_jack_2.png'),
+  mountain_climber: require('../../assets/poses/mountain_climber_2.png'),
+  kb_swing: require('../../assets/poses/kb_swing_2.png'),
   // plank_side é isométrico (sem segunda pose), como o plank comum.
 };
 
@@ -166,6 +174,10 @@ const GLOW_BOX: Record<AnimationKind, { x: number; y: number; w: number; h: numb
   wrist_curl: { x: 0.32, y: 0.32, w: 0.36, h: 0.28 },
   wrist_roller: { x: 0.36, y: 0.28, w: 0.34, h: 0.24 },
   pistol_squat: { x: 0.1, y: 0.32, w: 0.6, h: 0.4 },
+  burpee: { x: 0.1, y: 0.3, w: 0.7, h: 0.4 },
+  jumping_jack: { x: 0.2, y: 0.1, w: 0.6, h: 0.7 },
+  mountain_climber: { x: 0.1, y: 0.3, w: 0.7, h: 0.4 },
+  kb_swing: { x: 0.24, y: 0.16, w: 0.5, h: 0.6 },
 };
 
 export default function ExerciseAnimation({ kind, size = 220, highlightColor }: Props) {

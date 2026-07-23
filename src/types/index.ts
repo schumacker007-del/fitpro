@@ -119,7 +119,12 @@ export type AnimationKind =
   | 'stretch_shoulder'
   | 'stretch_triceps'
   | 'stretch_catcow'
-  | 'stretch_glute';
+  | 'stretch_glute'
+  | 'chest_press_db'
+  | 'chest_press_incline_db'
+  | 'pec_deck_seated'
+  | 'cable_crossover_standing'
+  | 'dip_chest';
 
 /** Percepção Subjetiva de Esforço (RPE), de 1 (muito fácil) a 10 (esforço máximo). */
 export type RpeScore = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;

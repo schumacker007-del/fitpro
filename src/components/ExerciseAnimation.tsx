@@ -80,6 +80,11 @@ const POSE_WORK: Record<AnimationKind, any> = {
   stretch_triceps: require('../../assets/poses/stretch_triceps.png'),
   stretch_catcow: require('../../assets/poses/stretch_catcow.png'),
   stretch_glute: require('../../assets/poses/stretch_glute.png'),
+  chest_press_db: require('../../assets/poses/chest_press_db.png'),
+  chest_press_incline_db: require('../../assets/poses/chest_press_incline_db.png'),
+  pec_deck_seated: require('../../assets/poses/pec_deck_seated.png'),
+  cable_crossover_standing: require('../../assets/poses/cable_crossover_standing.png'),
+  dip_chest: require('../../assets/poses/dip_chest.png'),
 };
 
 // Pose "de partida" (retorno / preparação). Isométricos (plank) não têm segunda pose.
@@ -139,6 +144,11 @@ const POSE_REST: Partial<Record<AnimationKind, any>> = {
   elliptical: require('../../assets/poses/elliptical_2.png'),
   rowing_machine: require('../../assets/poses/rowing_machine_2.png'),
   stair_climber: require('../../assets/poses/stair_climber_2.png'),
+  chest_press_db: require('../../assets/poses/chest_press_db_2.png'),
+  chest_press_incline_db: require('../../assets/poses/chest_press_incline_db_2.png'),
+  pec_deck_seated: require('../../assets/poses/pec_deck_seated_2.png'),
+  cable_crossover_standing: require('../../assets/poses/cable_crossover_standing_2.png'),
+  dip_chest: require('../../assets/poses/dip_chest_2.png'),
   // plank_side é isométrico (sem segunda pose), como o plank comum.
 };
 
@@ -209,6 +219,11 @@ const GLOW_BOX: Record<AnimationKind, { x: number; y: number; w: number; h: numb
   stretch_triceps: { x: 0.28, y: 0.08, w: 0.4, h: 0.34 },
   stretch_catcow: { x: 0.24, y: 0.22, w: 0.52, h: 0.4 },
   stretch_glute: { x: 0.2, y: 0.4, w: 0.5, h: 0.38 },
+  chest_press_db: { x: 0.3, y: 0.28, w: 0.4, h: 0.32 },
+  chest_press_incline_db: { x: 0.28, y: 0.16, w: 0.44, h: 0.32 },
+  pec_deck_seated: { x: 0.2, y: 0.22, w: 0.5, h: 0.34 },
+  cable_crossover_standing: { x: 0.24, y: 0.2, w: 0.5, h: 0.32 },
+  dip_chest: { x: 0.26, y: 0.14, w: 0.4, h: 0.36 },
 };
 
 export default function ExerciseAnimation({ kind, size = 220, highlightColor }: Props) {

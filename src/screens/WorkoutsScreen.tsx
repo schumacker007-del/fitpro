@@ -6,7 +6,7 @@ import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card, Pill, ProBadge, SectionTitle } from '../components/ui';
 import { useUser } from '../context/UserContext';
-import { WORKOUTS } from '../data/workouts';
+import { CURATED_WORKOUTS } from '../data/workouts';
 import { WorkoutsStackParamList } from '../navigation/types';
 import { colors, spacing } from '../theme';
 
@@ -14,8 +14,8 @@ export default function WorkoutsScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<WorkoutsStackParamList, 'WorkoutsList'>>();
   const { profile, planTier } = useUser();
 
-  const recommended = WORKOUTS.filter((w) => !profile || w.goal === profile.goal);
-  const others = WORKOUTS.filter((w) => profile && w.goal !== profile.goal);
+  const recommended = CURATED_WORKOUTS.filter((w) => !profile || w.goal === profile.goal);
+  const others = CURATED_WORKOUTS.filter((w) => profile && w.goal !== profile.goal);
   const ordered = [...recommended, ...others];
 
   return (

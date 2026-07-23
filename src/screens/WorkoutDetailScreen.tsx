@@ -5,7 +5,7 @@ import React from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ExerciseAnimation from '../components/ExerciseAnimation';
-import { Card, Pill, PrimaryButton } from '../components/ui';
+import { Card, Pill, PrimaryButton, ProBadge } from '../components/ui';
 import { useUser } from '../context/UserContext';
 import { getMuscleGroup } from '../data/muscleGroups';
 import { RESPONSIBLE_PROFESSIONAL } from '../data/professional';
@@ -84,30 +84,46 @@ export default function WorkoutDetailScreen() {
               </View>
             </View>
           }
-          renderItem={({ item, index }) => (
-            <Pressable
-              onPress={() => navigation.navigate('ExerciseDetail', { workoutId: workout.id, exerciseId: item.id })}
-            >
-              <Card style={styles.exerciseCard}>
-                <View style={styles.exerciseThumb}>
-                  <ExerciseAnimation
-                    kind={item.animation}
-                    size={64}
-                    highlightColor={getMuscleGroup(item.primaryMuscles[0]).color}
-                  />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.exerciseIndex}>Exercício {index + 1}</Text>
-                  <Text style={styles.exerciseName}>{item.name}</Text>
-                  <View style={styles.pillRow}>
-                    <Pill label={`${item.sets}x ${item.reps}`} tone="primary" />
-                    <Pill label={item.muscleGroup} />
+          renderItem={({ item, index }) => {
+            const itemLocked = item.tier === 'pro' && planTier === 'free';
+            return (
+              <Pressable
+                onPress={() =>
+                  itemLocked
+                    ? (navigation.getParent() as any)?.navigate('Perfil', { screen: 'Paywall' })
+                    : navigation.navigate('ExerciseDetail', { workoutId: workout.id, exerciseId: item.id })
+                }
+              >
+                <Card style={styles.exerciseCard}>
+                  <View style={styles.exerciseThumb}>
+                    <ExerciseAnimation
+                      kind={item.animation}
+                      size={64}
+                      highlightColor={getMuscleGroup(item.primaryMuscles[0]).color}
+                    />
                   </View>
-                </View>
-                <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
-              </Card>
-            </Pressable>
-          )}
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.exerciseIndex}>Exercício {index + 1}</Text>
+                    <View style={styles.titleRow}>
+                      <Text style={styles.exerciseName} numberOfLines={1}>
+                        {item.name}
+                      </Text>
+                      {item.tier === 'pro' ? <ProBadge /> : null}
+                    </View>
+                    <View style={styles.pillRow}>
+                      <Pill label={`${item.sets}x ${item.reps}`} tone="primary" />
+                      <Pill label={item.muscleGroup} />
+                    </View>
+                  </View>
+                  <Ionicons
+                    name={itemLocked ? 'lock-closed' : 'chevron-forward'}
+                    size={18}
+                    color={itemLocked ? colors.gold : colors.textMuted}
+                  />
+                </Card>
+              </Pressable>
+            );
+          }}
         />
       )}
     </SafeAreaView>
@@ -128,7 +144,8 @@ const styles = StyleSheet.create({
   exerciseCard: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   exerciseThumb: { borderRadius: 12, overflow: 'hidden' },
   exerciseIndex: { color: colors.textMuted, fontSize: 11, fontWeight: '700', marginBottom: 2 },
-  exerciseName: { color: colors.text, fontSize: 15, fontWeight: '700', marginBottom: 6 },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 },
+  exerciseName: { color: colors.text, fontSize: 15, fontWeight: '700', flexShrink: 1 },
   pillRow: { flexDirection: 'row', gap: 6, flexWrap: 'wrap' },
   lockedWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.xl, gap: spacing.sm },
   lockedTitle: { color: colors.text, fontSize: 18, fontWeight: '800', marginTop: spacing.sm, textAlign: 'center' },

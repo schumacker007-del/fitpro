@@ -1,9 +1,8 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, Easing, Image, StyleSheet, View } from 'react-native';
+import { Animated, Easing, StyleSheet, View } from 'react-native';
 import Svg, { Defs, Ellipse, RadialGradient, Stop } from 'react-native-svg';
 import { colors, radius } from '../theme';
-
-type AnimationKind = 'squat' | 'pushup' | 'jump' | 'lunge' | 'plank' | 'row' | 'curl' | 'stretch';
+import { AnimationKind } from '../types';
 
 interface Props {
   kind: AnimationKind;
@@ -24,6 +23,15 @@ const POSE_WORK: Record<AnimationKind, any> = {
   row: require('../../assets/poses/row.png'),
   curl: require('../../assets/poses/curl.png'),
   stretch: require('../../assets/poses/stretch.png'),
+  chest_press: require('../../assets/poses/chest_press.png'),
+  pulldown: require('../../assets/poses/pulldown.png'),
+  hip_hinge: require('../../assets/poses/hip_hinge.png'),
+  shoulder_press: require('../../assets/poses/shoulder_press.png'),
+  lateral_raise: require('../../assets/poses/lateral_raise.png'),
+  leg_curl: require('../../assets/poses/leg_curl.png'),
+  hip_thrust: require('../../assets/poses/hip_thrust.png'),
+  calf_raise: require('../../assets/poses/calf_raise.png'),
+  crunch: require('../../assets/poses/crunch.png'),
 };
 
 // Pose "de partida" (retorno / preparação). Isométricos (plank) não têm segunda pose.
@@ -35,6 +43,15 @@ const POSE_REST: Partial<Record<AnimationKind, any>> = {
   row: require('../../assets/poses/row_2.png'),
   curl: require('../../assets/poses/curl_2.png'),
   stretch: require('../../assets/poses/stretch_2.png'),
+  chest_press: require('../../assets/poses/chest_press_2.png'),
+  pulldown: require('../../assets/poses/pulldown_2.png'),
+  hip_hinge: require('../../assets/poses/hip_hinge_2.png'),
+  shoulder_press: require('../../assets/poses/shoulder_press_2.png'),
+  lateral_raise: require('../../assets/poses/lateral_raise_2.png'),
+  leg_curl: require('../../assets/poses/leg_curl_2.png'),
+  hip_thrust: require('../../assets/poses/hip_thrust_2.png'),
+  calf_raise: require('../../assets/poses/calf_raise_2.png'),
+  crunch: require('../../assets/poses/crunch_2.png'),
 };
 
 // Região aproximada (fração 0-1 da imagem) do músculo em destaque em cada pose.
@@ -47,6 +64,15 @@ const GLOW_BOX: Record<AnimationKind, { x: number; y: number; w: number; h: numb
   row: { x: 0.28, y: 0.13, w: 0.42, h: 0.3 },
   curl: { x: 0.33, y: 0.14, w: 0.4, h: 0.24 },
   stretch: null,
+  chest_press: { x: 0.3, y: 0.3, w: 0.4, h: 0.3 },
+  pulldown: { x: 0.28, y: 0.18, w: 0.44, h: 0.32 },
+  hip_hinge: { x: 0.16, y: 0.5, w: 0.5, h: 0.36 },
+  shoulder_press: { x: 0.22, y: 0.06, w: 0.56, h: 0.34 },
+  lateral_raise: { x: 0.06, y: 0.18, w: 0.88, h: 0.24 },
+  leg_curl: { x: 0.4, y: 0.35, w: 0.4, h: 0.4 },
+  hip_thrust: { x: 0.32, y: 0.4, w: 0.36, h: 0.34 },
+  calf_raise: { x: 0.34, y: 0.65, w: 0.32, h: 0.3 },
+  crunch: { x: 0.28, y: 0.4, w: 0.4, h: 0.35 },
 };
 
 export default function ExerciseAnimation({ kind, size = 220, highlightColor }: Props) {

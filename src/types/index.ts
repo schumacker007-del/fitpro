@@ -11,8 +11,9 @@ export type MuscleGroupId =
   | 'biceps'
   | 'triceps'
   | 'abdomen'
-  | 'pernas'
-  | 'gluteos'
+  | 'quadriceps'
+  | 'posterior_gluteos'
+  | 'panturrilha'
   | 'cardio'
   | 'mobilidade';
 
@@ -38,9 +39,36 @@ export interface ExerciseStep {
   postureTips: string[];
   /** Erros comuns de execução a evitar (Pro). */
   commonMistakes: string[];
-  animation: 'squat' | 'pushup' | 'jump' | 'lunge' | 'plank' | 'row' | 'curl' | 'stretch';
+  animation: AnimationKind;
+  /** Equipamento sugerido (ex.: "Barra", "Halteres", "Máquina", "Peso do corpo"). */
+  equipment?: string;
   tier: PlanTier;
 }
+
+/**
+ * Padrão de movimento usado para escolher a animação. Exercícios com a mesma
+ * biomecânica (ex.: todos os supinos, todas as roscas) compartilham a mesma
+ * animação, mantendo o mesmo modelo/estilo visual em todo o app — igual ao
+ * que os grandes apps de treino fazem com bibliotecas de animação 3D.
+ */
+export type AnimationKind =
+  | 'squat'
+  | 'pushup'
+  | 'jump'
+  | 'lunge'
+  | 'plank'
+  | 'row'
+  | 'curl'
+  | 'stretch'
+  | 'chest_press'
+  | 'pulldown'
+  | 'hip_hinge'
+  | 'shoulder_press'
+  | 'lateral_raise'
+  | 'leg_curl'
+  | 'hip_thrust'
+  | 'calf_raise'
+  | 'crunch';
 
 /** Percepção Subjetiva de Esforço (RPE), de 1 (muito fácil) a 10 (esforço máximo). */
 export type RpeScore = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
@@ -64,6 +92,8 @@ export interface WorkoutPlan {
   durationMinutes: number;
   tier: PlanTier;
   exercises: ExerciseStep[];
+  /** Planos "biblioteca" (agrupam exercícios por grupo muscular) não aparecem na listagem principal de treinos. */
+  hidden?: boolean;
 }
 
 export interface Meal {

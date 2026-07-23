@@ -1,6 +1,7 @@
 import { ExerciseStep, MuscleGroupId, WorkoutPlan } from '../types';
+import { LIBRARY_WORKOUTS } from './exerciseLibrary';
 
-export const WORKOUTS: WorkoutPlan[] = [
+export const CURATED_WORKOUTS: WorkoutPlan[] = [
   // ---------- FREE ----------
   {
     id: 'w-free-fullbody',
@@ -14,7 +15,7 @@ export const WORKOUTS: WorkoutPlan[] = [
         id: 'e-squat-1',
         name: 'Agachamento livre',
         muscleGroup: 'Pernas',
-        primaryMuscles: ['pernas'],
+        primaryMuscles: ['quadriceps'],
         sets: 3,
         reps: '12-15',
         restSeconds: 45,
@@ -129,7 +130,7 @@ export const WORKOUTS: WorkoutPlan[] = [
         id: 'e-lunge-1',
         name: 'Afundo alternado',
         muscleGroup: 'Pernas/Glúteos',
-        primaryMuscles: ['pernas', 'gluteos'],
+        primaryMuscles: ['quadriceps', 'posterior_gluteos'],
         sets: 3,
         reps: '10-12 por lado',
         restSeconds: 30,
@@ -280,7 +281,7 @@ export const WORKOUTS: WorkoutPlan[] = [
         id: 'e-squat-2',
         name: 'Agachamento sumô',
         muscleGroup: 'Pernas/Glúteos',
-        primaryMuscles: ['pernas', 'gluteos'],
+        primaryMuscles: ['quadriceps', 'posterior_gluteos'],
         sets: 4,
         reps: '10-12',
         restSeconds: 60,
@@ -306,7 +307,7 @@ export const WORKOUTS: WorkoutPlan[] = [
         id: 'e-lunge-2',
         name: 'Afundo búlgaro',
         muscleGroup: 'Pernas/Glúteos',
-        primaryMuscles: ['pernas', 'gluteos'],
+        primaryMuscles: ['quadriceps', 'posterior_gluteos'],
         sets: 4,
         reps: '8-10 por lado',
         restSeconds: 60,
@@ -342,7 +343,7 @@ export const WORKOUTS: WorkoutPlan[] = [
         id: 'e-jump-2',
         name: 'Jump squat',
         muscleGroup: 'Cardio/Pernas',
-        primaryMuscles: ['cardio', 'pernas'],
+        primaryMuscles: ['cardio', 'quadriceps'],
         sets: 5,
         reps: '30s',
         restSeconds: 20,
@@ -392,8 +393,15 @@ export const WORKOUTS: WorkoutPlan[] = [
   },
 ];
 
+/**
+ * Todos os planos: os treinos curados (mostrados na aba Treinos) + a biblioteca
+ * completa de exercícios por grupo muscular (planos "hidden", usados na busca
+ * por grupo muscular e para abrir detalhes/treino guiado de qualquer exercício).
+ */
+export const WORKOUTS: WorkoutPlan[] = [...CURATED_WORKOUTS, ...LIBRARY_WORKOUTS];
+
 export function getWorkoutsForGoal(goal: string) {
-  return WORKOUTS.filter((w) => w.goal === goal || goal === 'manter_forma');
+  return CURATED_WORKOUTS.filter((w) => w.goal === goal || goal === 'manter_forma');
 }
 
 export interface ExerciseWithWorkout extends ExerciseStep {

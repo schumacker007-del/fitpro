@@ -14,6 +14,7 @@ export const MUSCLE_GROUPS: MuscleGroupInfo[] = [
   { id: 'ombros', label: 'Ombros', color: '#F4B740', icon: 'body-outline' },
   { id: 'biceps', label: 'Bíceps', color: '#60A5FA', icon: 'barbell-outline' },
   { id: 'triceps', label: 'Tríceps', color: '#A78BFA', icon: 'barbell-outline' },
+  { id: 'antebraco', label: 'Antebraço', color: '#C084FC', icon: 'barbell-outline' },
   { id: 'quadriceps', label: 'Quadríceps', color: '#38BDF8', icon: 'walk-outline' },
   { id: 'posterior_gluteos', label: 'Posterior & Glúteos', color: '#FB923C', icon: 'body-outline' },
   { id: 'panturrilha', label: 'Panturrilha', color: '#2DD4BF', icon: 'walk-outline' },

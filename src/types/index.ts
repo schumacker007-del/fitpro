@@ -10,6 +10,7 @@ export type MuscleGroupId =
   | 'ombros'
   | 'biceps'
   | 'triceps'
+  | 'antebraco'
   | 'abdomen'
   | 'quadriceps'
   | 'posterior_gluteos'
@@ -97,7 +98,10 @@ export type AnimationKind =
   | 'crunch_cable'
   | 'pullover'
   | 'step_up'
-  | 'plank_side';
+  | 'plank_side'
+  | 'wrist_curl'
+  | 'wrist_roller'
+  | 'pistol_squat';
 
 /** Percepção Subjetiva de Esforço (RPE), de 1 (muito fácil) a 10 (esforço máximo). */
 export type RpeScore = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;

@@ -29,6 +29,7 @@ const FRONT_REGIONS: Region[] = [
   { muscle: 'ombros', boxes: [{ x: 164, y: 238, w: 205, h: 169 }, { x: 655, y: 238, w: 205, h: 169 }] },
   { muscle: 'peito', boxes: [{ x: 300, y: 284, w: 200, h: 223 }, { x: 524, y: 284, w: 200, h: 223 }] },
   { muscle: 'biceps', boxes: [{ x: 70, y: 292, w: 195, h: 300 }, { x: 759, y: 292, w: 195, h: 300 }] },
+  { muscle: 'antebraco', boxes: [{ x: 60, y: 592, w: 175, h: 220 }, { x: 789, y: 592, w: 175, h: 220 }] },
   { muscle: 'abdomen', boxes: [{ x: 348, y: 484, w: 328, h: 223 }] },
   { muscle: 'quadriceps', boxes: [{ x: 287, y: 707, w: 205, h: 308 }, { x: 532, y: 707, w: 205, h: 308 }] },
   { muscle: 'panturrilha', boxes: [{ x: 287, y: 1015, w: 205, h: 252 }, { x: 532, y: 1015, w: 205, h: 252 }] },
@@ -38,6 +39,7 @@ const BACK_REGIONS: Region[] = [
   { muscle: 'costas', boxes: [{ x: 164, y: 184, w: 696, h: 460 }] },
   { muscle: 'ombros', boxes: [{ x: 164, y: 238, w: 205, h: 169 }, { x: 655, y: 238, w: 205, h: 169 }] },
   { muscle: 'triceps', boxes: [{ x: 70, y: 292, w: 195, h: 300 }, { x: 759, y: 292, w: 195, h: 300 }] },
+  { muscle: 'antebraco', boxes: [{ x: 60, y: 592, w: 175, h: 220 }, { x: 789, y: 592, w: 175, h: 220 }] },
   { muscle: 'posterior_gluteos', boxes: [{ x: 287, y: 590, w: 450, h: 190 }, { x: 287, y: 707, w: 205, h: 308 }, { x: 532, y: 707, w: 205, h: 308 }] },
   { muscle: 'panturrilha', boxes: [{ x: 287, y: 1015, w: 205, h: 252 }, { x: 532, y: 1015, w: 205, h: 252 }] },
 ];

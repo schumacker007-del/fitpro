@@ -32,6 +32,15 @@ const POSE_WORK: Record<AnimationKind, any> = {
   hip_thrust: require('../../assets/poses/hip_thrust.png'),
   calf_raise: require('../../assets/poses/calf_raise.png'),
   crunch: require('../../assets/poses/crunch.png'),
+  chest_fly: require('../../assets/poses/chest_fly.png'),
+  front_raise: require('../../assets/poses/front_raise.png'),
+  rear_delt_fly: require('../../assets/poses/rear_delt_fly.png'),
+  shrug: require('../../assets/poses/shrug.png'),
+  triceps_extension: require('../../assets/poses/triceps_extension.png'),
+  pull_up: require('../../assets/poses/pull_up.png'),
+  leg_extension: require('../../assets/poses/leg_extension.png'),
+  hip_abduction: require('../../assets/poses/hip_abduction.png'),
+  leg_raise: require('../../assets/poses/leg_raise.png'),
 };
 
 // Pose "de partida" (retorno / preparação). Isométricos (plank) não têm segunda pose.
@@ -52,6 +61,15 @@ const POSE_REST: Partial<Record<AnimationKind, any>> = {
   hip_thrust: require('../../assets/poses/hip_thrust_2.png'),
   calf_raise: require('../../assets/poses/calf_raise_2.png'),
   crunch: require('../../assets/poses/crunch_2.png'),
+  chest_fly: require('../../assets/poses/chest_fly_2.png'),
+  front_raise: require('../../assets/poses/front_raise_2.png'),
+  rear_delt_fly: require('../../assets/poses/rear_delt_fly_2.png'),
+  shrug: require('../../assets/poses/shrug_2.png'),
+  triceps_extension: require('../../assets/poses/triceps_extension_2.png'),
+  pull_up: require('../../assets/poses/pull_up_2.png'),
+  leg_extension: require('../../assets/poses/leg_extension_2.png'),
+  hip_abduction: require('../../assets/poses/hip_abduction_2.png'),
+  leg_raise: require('../../assets/poses/leg_raise_2.png'),
 };
 
 // Região aproximada (fração 0-1 da imagem) do músculo em destaque em cada pose.
@@ -73,6 +91,15 @@ const GLOW_BOX: Record<AnimationKind, { x: number; y: number; w: number; h: numb
   hip_thrust: { x: 0.32, y: 0.4, w: 0.36, h: 0.34 },
   calf_raise: { x: 0.34, y: 0.65, w: 0.32, h: 0.3 },
   crunch: { x: 0.28, y: 0.4, w: 0.4, h: 0.35 },
+  chest_fly: { x: 0.3, y: 0.24, w: 0.4, h: 0.3 },
+  front_raise: { x: 0.24, y: 0.14, w: 0.5, h: 0.26 },
+  rear_delt_fly: { x: 0.16, y: 0.14, w: 0.42, h: 0.28 },
+  shrug: { x: 0.28, y: 0.1, w: 0.44, h: 0.22 },
+  triceps_extension: { x: 0.14, y: 0.24, w: 0.36, h: 0.3 },
+  pull_up: { x: 0.24, y: 0.14, w: 0.52, h: 0.4 },
+  leg_extension: { x: 0.04, y: 0.35, w: 0.5, h: 0.32 },
+  hip_abduction: { x: 0.18, y: 0.35, w: 0.62, h: 0.32 },
+  leg_raise: { x: 0.04, y: 0.08, w: 0.36, h: 0.55 },
 };
 
 export default function ExerciseAnimation({ kind, size = 220, highlightColor }: Props) {

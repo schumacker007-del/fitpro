@@ -68,7 +68,16 @@ export type AnimationKind =
   | 'leg_curl'
   | 'hip_thrust'
   | 'calf_raise'
-  | 'crunch';
+  | 'crunch'
+  | 'chest_fly'
+  | 'front_raise'
+  | 'rear_delt_fly'
+  | 'shrug'
+  | 'triceps_extension'
+  | 'pull_up'
+  | 'leg_extension'
+  | 'hip_abduction'
+  | 'leg_raise';
 
 /** Percepção Subjetiva de Esforço (RPE), de 1 (muito fácil) a 10 (esforço máximo). */
 export type RpeScore = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;

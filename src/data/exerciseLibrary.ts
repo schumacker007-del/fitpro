@@ -101,13 +101,13 @@ export const LIBRARY_WORKOUTS: WorkoutPlan[] = [
       },
       {
         id: 'e-lib-peito-crossover',
-        name: 'Crossover (cabo alto/baixo)',
+        name: 'Crossover no cabo (cross-over)',
         muscleGroup: 'Peito',
         primaryMuscles: ['peito'],
         sets: 3,
         reps: '12-15',
         restSeconds: 60,
-        animation: 'chest_press',
+        animation: 'chest_fly',
         equipment: 'Cabo/Polia',
         tier: 'pro',
         instructions: [
@@ -132,7 +132,7 @@ export const LIBRARY_WORKOUTS: WorkoutPlan[] = [
         sets: 3,
         reps: '12-15',
         restSeconds: 60,
-        animation: 'chest_press',
+        animation: 'chest_fly',
         equipment: 'Máquina ou halteres',
         tier: 'pro',
         instructions: [
@@ -272,7 +272,7 @@ export const LIBRARY_WORKOUTS: WorkoutPlan[] = [
         sets: 4,
         reps: 'Máximo possível',
         restSeconds: 90,
-        animation: 'pulldown',
+        animation: 'pull_up',
         equipment: 'Peso do corpo',
         tier: 'pro',
         instructions: [
@@ -388,7 +388,7 @@ export const LIBRARY_WORKOUTS: WorkoutPlan[] = [
         sets: 3,
         reps: '12-15',
         restSeconds: 45,
-        animation: 'lateral_raise',
+        animation: 'front_raise',
         equipment: 'Halteres ou anilha',
         tier: 'pro',
         instructions: [
@@ -413,7 +413,7 @@ export const LIBRARY_WORKOUTS: WorkoutPlan[] = [
         sets: 3,
         reps: '12-15',
         restSeconds: 45,
-        animation: 'lateral_raise',
+        animation: 'rear_delt_fly',
         equipment: 'Halteres ou máquina',
         tier: 'pro',
         instructions: [
@@ -438,7 +438,7 @@ export const LIBRARY_WORKOUTS: WorkoutPlan[] = [
         sets: 3,
         reps: '12-15',
         restSeconds: 45,
-        animation: 'lateral_raise',
+        animation: 'shrug',
         equipment: 'Halteres ou barra',
         tier: 'pro',
         instructions: [
@@ -614,7 +614,7 @@ export const LIBRARY_WORKOUTS: WorkoutPlan[] = [
         sets: 4,
         reps: '10-12',
         restSeconds: 45,
-        animation: 'pushup',
+        animation: 'triceps_extension',
         equipment: 'Cabo/Polia',
         tier: 'free',
         instructions: [
@@ -639,7 +639,7 @@ export const LIBRARY_WORKOUTS: WorkoutPlan[] = [
         sets: 4,
         reps: '10-12',
         restSeconds: 60,
-        animation: 'pushup',
+        animation: 'triceps_extension',
         equipment: 'Barra W ou halteres',
         tier: 'pro',
         instructions: [
@@ -664,7 +664,7 @@ export const LIBRARY_WORKOUTS: WorkoutPlan[] = [
         sets: 3,
         reps: '10-12',
         restSeconds: 60,
-        animation: 'pushup',
+        animation: 'triceps_extension',
         equipment: 'Halter ou barra',
         tier: 'pro',
         instructions: [
@@ -689,7 +689,7 @@ export const LIBRARY_WORKOUTS: WorkoutPlan[] = [
         sets: 3,
         reps: '12-15 por lado',
         restSeconds: 45,
-        animation: 'pushup',
+        animation: 'triceps_extension',
         equipment: 'Halter',
         tier: 'pro',
         instructions: [
@@ -777,7 +777,7 @@ export const LIBRARY_WORKOUTS: WorkoutPlan[] = [
         sets: 3,
         reps: '12-15',
         restSeconds: 45,
-        animation: 'squat',
+        animation: 'leg_extension',
         equipment: 'Máquina',
         tier: 'pro',
         instructions: [
@@ -940,7 +940,7 @@ export const LIBRARY_WORKOUTS: WorkoutPlan[] = [
         sets: 3,
         reps: '15-20',
         restSeconds: 40,
-        animation: 'lunge',
+        animation: 'hip_abduction',
         equipment: 'Máquina',
         tier: 'pro',
         instructions: [
@@ -965,7 +965,7 @@ export const LIBRARY_WORKOUTS: WorkoutPlan[] = [
         sets: 3,
         reps: '15-20',
         restSeconds: 40,
-        animation: 'lunge',
+        animation: 'hip_abduction',
         equipment: 'Máquina',
         tier: 'pro',
         instructions: [
@@ -1116,7 +1116,7 @@ export const LIBRARY_WORKOUTS: WorkoutPlan[] = [
         sets: 4,
         reps: '12-15',
         restSeconds: 30,
-        animation: 'crunch',
+        animation: 'leg_raise',
         equipment: 'Peso do corpo',
         tier: 'pro',
         instructions: [

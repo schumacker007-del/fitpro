@@ -46,10 +46,11 @@ export interface ExerciseStep {
 }
 
 /**
- * Padrão de movimento usado para escolher a animação. Exercícios com a mesma
- * biomecânica (ex.: todos os supinos, todas as roscas) compartilham a mesma
- * animação, mantendo o mesmo modelo/estilo visual em todo o app — igual ao
- * que os grandes apps de treino fazem com bibliotecas de animação 3D.
+ * Padrão de movimento usado para escolher a animação. Cada variação de
+ * exercício (pegada, ângulo de banco, aparelho) tem sua própria animação
+ * para deixar claro qual é o movimento certo — só exercícios praticamente
+ * idênticos (ex.: puxada aberta x fechada na mesma máquina) compartilham a
+ * mesma pose. Todas mantêm o mesmo modelo/estilo visual em todo o app.
  */
 export type AnimationKind =
   | 'squat'
@@ -77,7 +78,23 @@ export type AnimationKind =
   | 'pull_up'
   | 'leg_extension'
   | 'hip_abduction'
-  | 'leg_raise';
+  | 'leg_raise'
+  | 'chest_press_incline'
+  | 'chest_press_decline'
+  | 'curl_hammer'
+  | 'curl_scott'
+  | 'curl_concentrated'
+  | 'triceps_skullcrusher'
+  | 'triceps_overhead'
+  | 'triceps_kickback'
+  | 'seated_row'
+  | 'face_pull'
+  | 'leg_press'
+  | 'leg_curl_seated'
+  | 'calf_raise_seated'
+  | 'calf_raise_legpress'
+  | 'crunch_oblique'
+  | 'crunch_cable';
 
 /** Percepção Subjetiva de Esforço (RPE), de 1 (muito fácil) a 10 (esforço máximo). */
 export type RpeScore = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;

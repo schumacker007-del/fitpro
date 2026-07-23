@@ -57,7 +57,7 @@ export const LIBRARY_WORKOUTS: WorkoutPlan[] = [
         sets: 4,
         reps: '8-10',
         restSeconds: 90,
-        animation: 'chest_press',
+        animation: 'chest_press_incline',
         equipment: 'Barra ou halteres',
         tier: 'pro',
         instructions: [
@@ -82,7 +82,7 @@ export const LIBRARY_WORKOUTS: WorkoutPlan[] = [
         sets: 3,
         reps: '10-12',
         restSeconds: 75,
-        animation: 'chest_press',
+        animation: 'chest_press_decline',
         equipment: 'Barra ou halteres',
         tier: 'pro',
         instructions: [
@@ -197,7 +197,7 @@ export const LIBRARY_WORKOUTS: WorkoutPlan[] = [
         sets: 4,
         reps: '10-12',
         restSeconds: 60,
-        animation: 'row',
+        animation: 'seated_row',
         equipment: 'Cabo/Polia baixa',
         tier: 'pro',
         instructions: [
@@ -463,7 +463,7 @@ export const LIBRARY_WORKOUTS: WorkoutPlan[] = [
         sets: 3,
         reps: '15-20',
         restSeconds: 45,
-        animation: 'row',
+        animation: 'face_pull',
         equipment: 'Cabo com corda',
         tier: 'pro',
         instructions: [
@@ -526,7 +526,7 @@ export const LIBRARY_WORKOUTS: WorkoutPlan[] = [
         sets: 3,
         reps: '10-12',
         restSeconds: 45,
-        animation: 'curl',
+        animation: 'curl_hammer',
         equipment: 'Halteres',
         tier: 'pro',
         instructions: [
@@ -551,7 +551,7 @@ export const LIBRARY_WORKOUTS: WorkoutPlan[] = [
         sets: 3,
         reps: '10-12',
         restSeconds: 45,
-        animation: 'curl',
+        animation: 'curl_scott',
         equipment: 'Banco Scott + barra W',
         tier: 'pro',
         instructions: [
@@ -576,7 +576,7 @@ export const LIBRARY_WORKOUTS: WorkoutPlan[] = [
         sets: 3,
         reps: '10-12 por lado',
         restSeconds: 45,
-        animation: 'curl',
+        animation: 'curl_concentrated',
         equipment: 'Halter',
         tier: 'pro',
         instructions: [
@@ -639,7 +639,7 @@ export const LIBRARY_WORKOUTS: WorkoutPlan[] = [
         sets: 4,
         reps: '10-12',
         restSeconds: 60,
-        animation: 'triceps_extension',
+        animation: 'triceps_skullcrusher',
         equipment: 'Barra W ou halteres',
         tier: 'pro',
         instructions: [
@@ -664,7 +664,7 @@ export const LIBRARY_WORKOUTS: WorkoutPlan[] = [
         sets: 3,
         reps: '10-12',
         restSeconds: 60,
-        animation: 'triceps_extension',
+        animation: 'triceps_overhead',
         equipment: 'Halter ou barra',
         tier: 'pro',
         instructions: [
@@ -689,7 +689,7 @@ export const LIBRARY_WORKOUTS: WorkoutPlan[] = [
         sets: 3,
         reps: '12-15 por lado',
         restSeconds: 45,
-        animation: 'triceps_extension',
+        animation: 'triceps_kickback',
         equipment: 'Halter',
         tier: 'pro',
         instructions: [
@@ -752,7 +752,7 @@ export const LIBRARY_WORKOUTS: WorkoutPlan[] = [
         sets: 4,
         reps: '10-12',
         restSeconds: 75,
-        animation: 'squat',
+        animation: 'leg_press',
         equipment: 'Máquina',
         tier: 'pro',
         instructions: [
@@ -890,7 +890,7 @@ export const LIBRARY_WORKOUTS: WorkoutPlan[] = [
         sets: 3,
         reps: '12-15',
         restSeconds: 45,
-        animation: 'leg_curl',
+        animation: 'leg_curl_seated',
         equipment: 'Máquina',
         tier: 'pro',
         instructions: [
@@ -1028,7 +1028,7 @@ export const LIBRARY_WORKOUTS: WorkoutPlan[] = [
         sets: 3,
         reps: '15-20',
         restSeconds: 30,
-        animation: 'calf_raise',
+        animation: 'calf_raise_seated',
         equipment: 'Máquina',
         tier: 'pro',
         instructions: [
@@ -1053,7 +1053,7 @@ export const LIBRARY_WORKOUTS: WorkoutPlan[] = [
         sets: 3,
         reps: '15-20',
         restSeconds: 30,
-        animation: 'calf_raise',
+        animation: 'calf_raise_legpress',
         equipment: 'Leg press',
         tier: 'pro',
         instructions: [
@@ -1141,7 +1141,7 @@ export const LIBRARY_WORKOUTS: WorkoutPlan[] = [
         sets: 3,
         reps: '15-20 por lado',
         restSeconds: 30,
-        animation: 'crunch',
+        animation: 'crunch_oblique',
         equipment: 'Peso do corpo',
         tier: 'pro',
         instructions: [
@@ -1166,7 +1166,7 @@ export const LIBRARY_WORKOUTS: WorkoutPlan[] = [
         sets: 3,
         reps: '15-20',
         restSeconds: 30,
-        animation: 'crunch',
+        animation: 'crunch_cable',
         equipment: 'Cabo com corda',
         tier: 'pro',
         instructions: [

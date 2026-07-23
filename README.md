@@ -23,9 +23,13 @@ para rodar no seu iPhone via Expo Go (e futuramente publicar na App Store).
 - **Biblioteca completa de exercícios (55 exercícios / 9 grupos musculares)**: peito, costas, ombros,
   bíceps, tríceps, quadríceps, posterior de coxa/glúteos, panturrilha e abdômen/core, com instruções,
   postura e erros comuns em cada um.
-- **Treino sob medida (Pro)**: o aluno solicita uma ficha semanal ou mensal personalizada (objetivo, dias
-  disponíveis, equipamentos e restrições/lesões), enviada direto pelo WhatsApp para o professor responsável
-  montar manualmente — em vez de receber só um treino genérico.
+- **Montador de treino no app (Pro)**: o aluno (sozinho ou com o próprio professor da academia, sentado junto)
+  monta o treino do jeito que quiser — escolhe exercícios da biblioteca completa por grupo muscular, define
+  séries/repetições/descanso de cada um, nomeia, edita e exclui quando quiser. Quem preferir continua podendo
+  usar os treinos prontos sugeridos automaticamente pelo app.
+- **Treino sob medida via professor do FitPro (Pro)**: alternativa para quem não tem professor próprio — o
+  aluno solicita uma ficha semanal ou mensal (objetivo, dias disponíveis, equipamentos e restrições/lesões),
+  enviada direto pelo WhatsApp para o professor responsável do FitPro montar manualmente.
 - **Plano Free x Pro (paywall)**: tela comparando os dois planos, com assinatura mensal/anual
   (atualmente **simulada** — ver seção "Pagamentos" abaixo).
 

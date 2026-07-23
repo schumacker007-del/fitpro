@@ -25,10 +25,23 @@ export default function WorkoutsScreen() {
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
         ListHeaderComponent={
-          <SectionTitle
-            title="Treinos"
-            subtitle={profile ? `Recomendados para o objetivo: ${goalLabel(profile.goal)}` : 'Escolha um treino para começar'}
-          />
+          <>
+            <SectionTitle
+              title="Treinos"
+              subtitle={profile ? `Recomendados para o objetivo: ${goalLabel(profile.goal)}` : 'Escolha um treino para começar'}
+            />
+            <Pressable onPress={() => navigation.navigate('MuscleGroups')}>
+              <Card style={styles.muscleGroupsBanner}>
+                <Ionicons name="body" size={22} color={colors.primary} />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.muscleGroupsTitle}>Buscar por grupo muscular</Text>
+                  <Text style={styles.muscleGroupsSubtitle}>Peito, costas, pernas, bíceps e mais</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+              </Card>
+            </Pressable>
+            <View style={{ height: spacing.md }} />
+          </>
         }
         renderItem={({ item }) => {
           const locked = item.tier === 'pro' && planTier === 'free';
@@ -82,4 +95,7 @@ const styles = StyleSheet.create({
   workoutTitle: { color: colors.text, fontSize: 16, fontWeight: '700', flexShrink: 1 },
   pillRow: { flexDirection: 'row', gap: 6, marginBottom: 6, flexWrap: 'wrap' },
   exercisesCount: { color: colors.textMuted, fontSize: 12 },
+  muscleGroupsBanner: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  muscleGroupsTitle: { color: colors.text, fontWeight: '700', fontSize: 14 },
+  muscleGroupsSubtitle: { color: colors.textMuted, fontSize: 12, marginTop: 2 },
 });

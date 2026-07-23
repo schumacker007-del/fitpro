@@ -1,4 +1,4 @@
-import { WorkoutPlan } from '../types';
+import { ExerciseStep, MuscleGroupId, WorkoutPlan } from '../types';
 
 export const WORKOUTS: WorkoutPlan[] = [
   // ---------- FREE ----------
@@ -14,6 +14,7 @@ export const WORKOUTS: WorkoutPlan[] = [
         id: 'e-squat-1',
         name: 'Agachamento livre',
         muscleGroup: 'Pernas',
+        primaryMuscles: ['pernas'],
         sets: 3,
         reps: '12-15',
         restSeconds: 45,
@@ -30,6 +31,7 @@ export const WORKOUTS: WorkoutPlan[] = [
         id: 'e-pushup-1',
         name: 'Flexão de braço',
         muscleGroup: 'Peito/Tríceps',
+        primaryMuscles: ['peito', 'triceps'],
         sets: 3,
         reps: '8-12',
         restSeconds: 45,
@@ -46,6 +48,7 @@ export const WORKOUTS: WorkoutPlan[] = [
         id: 'e-plank-1',
         name: 'Prancha isométrica',
         muscleGroup: 'Core',
+        primaryMuscles: ['abdomen'],
         sets: 3,
         reps: '30-45s',
         restSeconds: 30,
@@ -71,6 +74,7 @@ export const WORKOUTS: WorkoutPlan[] = [
         id: 'e-jump-1',
         name: 'Polichinelo (Jumping Jack)',
         muscleGroup: 'Cardio',
+        primaryMuscles: ['cardio'],
         sets: 4,
         reps: '30-40s',
         restSeconds: 20,
@@ -86,6 +90,7 @@ export const WORKOUTS: WorkoutPlan[] = [
         id: 'e-lunge-1',
         name: 'Afundo alternado',
         muscleGroup: 'Pernas/Glúteos',
+        primaryMuscles: ['pernas', 'gluteos'],
         sets: 3,
         reps: '10-12 por lado',
         restSeconds: 30,
@@ -101,6 +106,7 @@ export const WORKOUTS: WorkoutPlan[] = [
         id: 'e-stretch-1',
         name: 'Alongamento final',
         muscleGroup: 'Mobilidade',
+        primaryMuscles: ['mobilidade'],
         sets: 1,
         reps: '5 min',
         restSeconds: 0,
@@ -127,6 +133,7 @@ export const WORKOUTS: WorkoutPlan[] = [
         id: 'e-row-1',
         name: 'Remada curvada',
         muscleGroup: 'Costas',
+        primaryMuscles: ['costas'],
         sets: 4,
         reps: '8-10',
         restSeconds: 60,
@@ -143,6 +150,7 @@ export const WORKOUTS: WorkoutPlan[] = [
         id: 'e-curl-1',
         name: 'Rosca direta',
         muscleGroup: 'Bíceps',
+        primaryMuscles: ['biceps'],
         sets: 4,
         reps: '10-12',
         restSeconds: 45,
@@ -158,6 +166,7 @@ export const WORKOUTS: WorkoutPlan[] = [
         id: 'e-pushup-2',
         name: 'Flexão com apoio elevado',
         muscleGroup: 'Peito',
+        primaryMuscles: ['peito'],
         sets: 4,
         reps: '10-15',
         restSeconds: 60,
@@ -183,6 +192,7 @@ export const WORKOUTS: WorkoutPlan[] = [
         id: 'e-squat-2',
         name: 'Agachamento sumô',
         muscleGroup: 'Pernas/Glúteos',
+        primaryMuscles: ['pernas', 'gluteos'],
         sets: 4,
         reps: '10-12',
         restSeconds: 60,
@@ -198,6 +208,7 @@ export const WORKOUTS: WorkoutPlan[] = [
         id: 'e-lunge-2',
         name: 'Afundo búlgaro',
         muscleGroup: 'Pernas/Glúteos',
+        primaryMuscles: ['pernas', 'gluteos'],
         sets: 4,
         reps: '8-10 por lado',
         restSeconds: 60,
@@ -223,6 +234,7 @@ export const WORKOUTS: WorkoutPlan[] = [
         id: 'e-jump-2',
         name: 'Jump squat',
         muscleGroup: 'Cardio/Pernas',
+        primaryMuscles: ['cardio', 'pernas'],
         sets: 5,
         reps: '30s',
         restSeconds: 20,
@@ -238,6 +250,7 @@ export const WORKOUTS: WorkoutPlan[] = [
         id: 'e-plank-2',
         name: 'Prancha com toque no ombro',
         muscleGroup: 'Core',
+        primaryMuscles: ['abdomen', 'ombros'],
         sets: 4,
         reps: '30-40s',
         restSeconds: 20,
@@ -254,4 +267,24 @@ export const WORKOUTS: WorkoutPlan[] = [
 
 export function getWorkoutsForGoal(goal: string) {
   return WORKOUTS.filter((w) => w.goal === goal || goal === 'manter_forma');
+}
+
+export interface ExerciseWithWorkout extends ExerciseStep {
+  workoutId: string;
+  workoutTitle: string;
+}
+
+/** Retorna todos os exercícios (de todos os treinos) que trabalham um grupo muscular, sem duplicar. */
+export function getExercisesForMuscleGroup(muscleGroup: MuscleGroupId): ExerciseWithWorkout[] {
+  const seen = new Set<string>();
+  const result: ExerciseWithWorkout[] = [];
+  for (const workout of WORKOUTS) {
+    for (const exercise of workout.exercises) {
+      if (exercise.primaryMuscles.includes(muscleGroup) && !seen.has(exercise.id)) {
+        seen.add(exercise.id);
+        result.push({ ...exercise, workoutId: workout.id, workoutTitle: workout.title });
+      }
+    }
+  }
+  return result;
 }

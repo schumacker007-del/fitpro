@@ -4,6 +4,18 @@ export type Gender = 'masculino' | 'feminino' | 'outro';
 
 export type PlanTier = 'free' | 'pro';
 
+export type MuscleGroupId =
+  | 'peito'
+  | 'costas'
+  | 'ombros'
+  | 'biceps'
+  | 'triceps'
+  | 'abdomen'
+  | 'pernas'
+  | 'gluteos'
+  | 'cardio'
+  | 'mobilidade';
+
 export interface UserProfile {
   name: string;
   gender: Gender;
@@ -17,6 +29,7 @@ export interface ExerciseStep {
   id: string;
   name: string;
   muscleGroup: string;
+  primaryMuscles: MuscleGroupId[];
   sets: number;
   reps: string;
   restSeconds: number;

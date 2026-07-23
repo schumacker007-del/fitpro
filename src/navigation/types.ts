@@ -1,7 +1,11 @@
+import { MuscleGroupId } from '../types';
+
 export type WorkoutsStackParamList = {
   WorkoutsList: undefined;
   WorkoutDetail: { workoutId: string };
   ExerciseDetail: { workoutId: string; exerciseId: string };
+  MuscleGroups: undefined;
+  MuscleGroupDetail: { muscleGroupId: MuscleGroupId };
 };
 
 export type ProfileStackParamList = {

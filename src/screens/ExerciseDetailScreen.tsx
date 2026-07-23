@@ -4,8 +4,10 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React from 'react';
 import { ScrollView, StyleSheet, Text, View, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import BodyMap from '../components/BodyMap';
 import ExerciseAnimation from '../components/ExerciseAnimation';
 import { Card, Pill } from '../components/ui';
+import { getMuscleGroup } from '../data/muscleGroups';
 import { WORKOUTS } from '../data/workouts';
 import { WorkoutsStackParamList } from '../navigation/types';
 import { colors, spacing, typography } from '../theme';
@@ -30,7 +32,10 @@ export default function ExerciseDetailScreen() {
         <View style={{ width: 22 }} />
       </View>
       <ScrollView contentContainerStyle={styles.content}>
-        <ExerciseAnimation kind={exercise.animation} size={260} />
+        <View style={styles.demoRow}>
+          <ExerciseAnimation kind={exercise.animation} size={180} />
+          <BodyMap highlighted={exercise.primaryMuscles} size={100} />
+        </View>
 
         <View style={styles.pillRow}>
           <Pill label={`${exercise.sets} séries`} tone="primary" />
@@ -41,6 +46,17 @@ export default function ExerciseDetailScreen() {
         <Card style={{ marginTop: spacing.lg }}>
           <Text style={styles.sectionLabel}>Grupo muscular</Text>
           <Text style={styles.value}>{exercise.muscleGroup}</Text>
+          <View style={styles.muscleChipRow}>
+            {exercise.primaryMuscles.map((m) => {
+              const info = getMuscleGroup(m);
+              return (
+                <View key={m} style={[styles.muscleChip, { backgroundColor: `${info.color}26`, borderColor: info.color }]}>
+                  <View style={[styles.muscleDot, { backgroundColor: info.color }]} />
+                  <Text style={[styles.muscleChipText, { color: info.color }]}>{info.label}</Text>
+                </View>
+              );
+            })}
+          </View>
         </Card>
 
         <Card style={{ marginTop: spacing.md }}>
@@ -74,9 +90,22 @@ const styles = StyleSheet.create({
   },
   backBtn: { padding: 4 },
   content: { padding: spacing.lg, paddingBottom: spacing.xl, alignItems: 'stretch' },
+  demoRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.md },
   pillRow: { flexDirection: 'row', gap: 8, justifyContent: 'center', marginTop: spacing.lg, flexWrap: 'wrap' },
   sectionLabel: { color: colors.textMuted, fontSize: 12, fontWeight: '700', marginBottom: 8, textTransform: 'uppercase' },
   value: { color: colors.text, fontSize: 16, fontWeight: '700' },
+  muscleChipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: spacing.sm },
+  muscleChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+  muscleDot: { width: 7, height: 7, borderRadius: 4 },
+  muscleChipText: { fontSize: 12, fontWeight: '700' },
   stepRow: { flexDirection: 'row', gap: 10, marginBottom: 12, alignItems: 'flex-start' },
   stepBadge: {
     width: 22,

@@ -13,9 +13,11 @@ interface Props {
   onFinish: () => void;
   /** Auth + profile loaded — splash can end after minimum display time. */
   ready?: boolean;
+  /** Static frame — skip timers/animations while gate loads underneath. */
+  frozen?: boolean;
 }
 
-export default function SplashScreen({ onFinish, ready = false }: Props) {
+export default function SplashScreen({ onFinish, ready = false, frozen = false }: Props) {
   const { t } = useLanguage();
   const opacity = useRef(new Animated.Value(1)).current;
   const progress = useRef(new Animated.Value(0)).current;
@@ -29,6 +31,7 @@ export default function SplashScreen({ onFinish, ready = false }: Props) {
   }, [finished, onFinish]);
 
   useEffect(() => {
+    if (frozen) return;
     Animated.parallel([
       Animated.timing(opacity, {
         toValue: 1,
@@ -46,7 +49,7 @@ export default function SplashScreen({ onFinish, ready = false }: Props) {
   }, [opacity, progress]);
 
   useEffect(() => {
-    if (!ready || finished) return;
+    if (frozen || !ready || finished) return;
     if (readySince.current == null) readySince.current = Date.now();
     const elapsed = Date.now() - readySince.current;
     const wait = Math.max(0, SPLASH_MIN_MS - elapsed);
@@ -55,15 +58,16 @@ export default function SplashScreen({ onFinish, ready = false }: Props) {
   }, [ready, finished, finish]);
 
   useEffect(() => {
-    if (!ready || finished) return;
+    if (frozen || !ready || finished) return;
     const maxTimer = setTimeout(finish, SPLASH_MAX_MS);
     return () => clearTimeout(maxTimer);
   }, [ready, finished, finish]);
 
   useEffect(() => {
+    if (frozen) return;
     const emergencyTimer = setTimeout(finish, SPLASH_EMERGENCY_MS);
     return () => clearTimeout(emergencyTimer);
-  }, [finish]);
+  }, [finish, frozen]);
 
   const progressWidth = progress.interpolate({
     inputRange: [0, 1],
@@ -73,9 +77,10 @@ export default function SplashScreen({ onFinish, ready = false }: Props) {
   return (
     <Pressable
       style={styles.root}
-      onPress={finish}
+      onPress={frozen ? undefined : finish}
       accessibilityRole="button"
       accessibilityLabel={t('splash.skip')}
+      disabled={frozen}
     >
       <Animated.View style={[styles.hero, { opacity }]}>
         <Image source={SPLASH_IMAGE} style={StyleSheet.absoluteFill} resizeMode="cover" />

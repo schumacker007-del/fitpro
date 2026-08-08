@@ -95,6 +95,16 @@ function AppShell() {
 
   const navigator = <RootNavigator />;
 
+  // Skip GamificationProvider AsyncStorage bootstrap on cold-start gate path.
+  if (!isLoggedIn) {
+    return (
+      <>
+        {navigator}
+        <StatusBar style="light" />
+      </>
+    );
+  }
+
   if (!needsHeavyProviders) {
     return (
       <>

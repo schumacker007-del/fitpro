@@ -1,28 +1,12 @@
-import { NavigationContainer, DarkTheme } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React, { useMemo, useState } from 'react';
 import { ActivityIndicator, InteractionManager, StyleSheet, Text, View } from 'react-native';
 import { useUser } from '../context/UserContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
-import LoginScreen from '../screens/LoginScreen';
+import ColdStartGate from '../screens/ColdStartGate';
 import SplashScreen from '../screens/SplashScreen';
 import { colors } from '../theme';
 import { RootStackParamList } from './types';
-
-const Stack = createNativeStackNavigator<RootStackParamList>();
-
-const navTheme = {
-  ...DarkTheme,
-  colors: {
-    ...DarkTheme.colors,
-    background: colors.background,
-    card: colors.surface,
-    border: colors.border,
-    primary: colors.primary,
-    text: colors.text,
-  },
-};
 
 function getInitialRoute(isLoggedIn: boolean, isOnboarded: boolean): keyof RootStackParamList {
   if (!isLoggedIn) return 'Login';
@@ -44,7 +28,8 @@ export default function RootNavigator() {
   const { isOnboarded, loading: userLoading } = useUser();
   const { isLoggedIn, loading: authLoading } = useAuth();
   const { locale } = useLanguage();
-  const [splashDone, setSplashDone] = useState(false);
+  const [splashFinished, setSplashFinished] = useState(false);
+  const [splashMounted, setSplashMounted] = useState(true);
   const [navReady, setNavReady] = useState(false);
 
   const appReady = !userLoading && !authLoading;
@@ -58,30 +43,49 @@ export default function RootNavigator() {
   );
 
   React.useEffect(() => {
-    if (!splashDone || !appReady || !isLoggedIn) {
+    if (!splashFinished || !appReady || !isLoggedIn) {
       setNavReady(false);
       return;
     }
+    const { enableScreens } = require('react-native-screens') as typeof import('react-native-screens');
+    enableScreens(true);
     const task = InteractionManager.runAfterInteractions(() => {
       setNavReady(true);
     });
     return () => task.cancel();
-  }, [splashDone, appReady, isLoggedIn, navigationKey]);
+  }, [splashFinished, appReady, isLoggedIn, navigationKey]);
 
-  if (!splashDone) {
-    return <SplashScreen onFinish={() => setSplashDone(true)} ready={appReady} />;
+  React.useEffect(() => {
+    if (!splashFinished || !appReady || isLoggedIn) return;
+    const task = InteractionManager.runAfterInteractions(() => {
+      setSplashMounted(false);
+    });
+    return () => task.cancel();
+  }, [splashFinished, appReady, isLoggedIn]);
+
+  if (!splashFinished) {
+    return <SplashScreen onFinish={() => setSplashFinished(true)} ready={appReady} />;
   }
 
   if (!appReady) {
-    return <BootstrapLoading />;
+    return (
+      <View style={styles.root}>
+        {splashMounted ? <SplashScreen onFinish={() => {}} ready frozen /> : null}
+        <BootstrapLoading />
+      </View>
+    );
   }
 
-  // Cold-start login gate: avoid NavigationContainer + native stack on first paint.
-  // TestFlight build 11 crashed when mounting the stack right after splash.
+  // Cold-start gate: no NavigationContainer, no native stack, no LoginScreen.
   if (!isLoggedIn) {
     return (
       <View style={styles.root}>
-        <LoginScreen standalone />
+        {splashMounted ? (
+          <View style={StyleSheet.absoluteFill} pointerEvents="none">
+            <SplashScreen onFinish={() => {}} ready frozen />
+          </View>
+        ) : null}
+        <ColdStartGate />
       </View>
     );
   }
@@ -90,41 +94,14 @@ export default function RootNavigator() {
     return <BootstrapLoading />;
   }
 
+  const AppStack = require('./AppStack').default as React.ComponentType<{
+    initialRouteName: keyof RootStackParamList;
+    navigationKey: string;
+  }>;
+
   return (
     <View style={styles.root}>
-      <NavigationContainer key={navigationKey} theme={navTheme}>
-        <Stack.Navigator
-          initialRouteName={initialRouteName}
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: colors.background },
-            animation: 'fade',
-          }}
-        >
-          <Stack.Screen name="Login" getComponent={() => require('../screens/LoginScreen').default} />
-          <Stack.Screen name="Onboarding" getComponent={() => require('../screens/OnboardingScreen').default} />
-          <Stack.Screen
-            name="Main"
-            getComponent={() => require('./MainTabs').default}
-            options={{ presentation: 'card', animation: 'none' }}
-          />
-          <Stack.Screen
-            name="GlobalSearch"
-            getComponent={() => require('../screens/GlobalSearchScreen').default}
-            options={{ animation: 'slide_from_bottom' }}
-          />
-          <Stack.Screen
-            name="PrivacyPolicy"
-            getComponent={() => require('../screens/PrivacyPolicyScreen').default}
-            options={{ presentation: 'modal' }}
-          />
-          <Stack.Screen
-            name="TermsOfUse"
-            getComponent={() => require('../screens/TermsOfUseScreen').default}
-            options={{ presentation: 'modal' }}
-          />
-        </Stack.Navigator>
-      </NavigationContainer>
+      <AppStack initialRouteName={initialRouteName} navigationKey={navigationKey} />
     </View>
   );
 }

@@ -20,6 +20,7 @@ import { HealthIntegrationProvider } from './src/context/HealthIntegrationContex
 import { BodyMeasurementsProvider } from './src/context/BodyMeasurementsContext';
 import { WorkoutDraftProvider } from './src/context/WorkoutDraftContext';
 import ReminderBootstrap from './src/components/ReminderBootstrap';
+import AppErrorBoundary from './src/components/AppErrorBoundary';
 import RootNavigator from './src/navigation/RootNavigator';
 
 function AppDataProviders({ children }: { children: React.ReactNode }) {
@@ -58,14 +59,16 @@ export default function App() {
   const [dataResetKey, setDataResetKey] = useState(0);
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#050810' }}>
+      <SafeAreaProvider style={{ flex: 1, backgroundColor: '#050810' }}>
         <LanguageProvider>
           <AppPreferencesProvider>
             <AuthProvider onAccountDeleted={() => setDataResetKey((key) => key + 1)}>
               <AppDataProviders key={dataResetKey}>
-                <ReminderBootstrap />
-                <RootNavigator />
+                <AppErrorBoundary>
+                  <ReminderBootstrap />
+                  <RootNavigator />
+                </AppErrorBoundary>
                 <StatusBar style="light" />
               </AppDataProviders>
             </AuthProvider>

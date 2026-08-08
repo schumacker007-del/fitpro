@@ -35,6 +35,7 @@ export async function configurePurchases(userId?: string): Promise<void> {
   if (!canUseRealPurchases()) return;
 
   const apiKey = getRevenueCatApiKey();
+  if (!apiKey || apiKey.length < 8) return;
 
   if (!configured) {
     if (__DEV__) {

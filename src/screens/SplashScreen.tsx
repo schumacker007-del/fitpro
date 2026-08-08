@@ -1,13 +1,12 @@
-import { ResizeMode, Video } from 'expo-av';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Animated, Easing, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useLanguage } from '../context/LanguageContext';
 import { colors, spacing } from '../theme';
 
-const SPLASH_VIDEO = require('../../assets/splash/splash-hero.mp4');
-const SPLASH_MAX_MS = 4000;
-const SPLASH_MIN_MS = 1200;
+const SPLASH_IMAGE = require('../../assets/splash/splash-hero.png');
+const SPLASH_MAX_MS = 2500;
+const SPLASH_MIN_MS = 600;
 
 interface Props {
   onFinish: () => void;
@@ -32,7 +31,7 @@ export default function SplashScreen({ onFinish, ready = false }: Props) {
     Animated.parallel([
       Animated.timing(opacity, {
         toValue: 1,
-        duration: 600,
+        duration: 400,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
@@ -63,16 +62,14 @@ export default function SplashScreen({ onFinish, ready = false }: Props) {
   });
 
   return (
-    <Pressable style={styles.root} onPress={finish} accessibilityRole="button" accessibilityLabel={t('splash.skip')}>
+    <Pressable
+      style={styles.root}
+      onPress={finish}
+      accessibilityRole="button"
+      accessibilityLabel={t('splash.skip')}
+    >
       <Animated.View style={[styles.hero, { opacity }]}>
-        <Video
-          source={SPLASH_VIDEO}
-          style={StyleSheet.absoluteFill}
-          resizeMode={ResizeMode.COVER}
-          shouldPlay
-          isLooping
-          isMuted
-        />
+        <Image source={SPLASH_IMAGE} style={StyleSheet.absoluteFill} resizeMode="cover" />
       </Animated.View>
 
       <LinearGradient

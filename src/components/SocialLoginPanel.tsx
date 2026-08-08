@@ -44,7 +44,7 @@ export default function SocialLoginPanel() {
   const facebookConfigured = isFacebookAuthConfigured();
 
   useEffect(() => {
-    if (Platform.OS !== 'ios') return;
+    if (Platform.OS !== 'ios' || (!googleConfigured && !facebookConfigured)) return;
     void import('expo-apple-authentication')
       .then((AppleAuthentication) => AppleAuthentication.isAvailableAsync())
       .then(setAppleAvailable)

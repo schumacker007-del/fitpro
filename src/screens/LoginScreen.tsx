@@ -1,14 +1,21 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import SocialLoginPanel from '../components/SocialLoginPanel';
+import BetaLoginPanel from '../components/BetaLoginPanel';
 import LegalFooter from '../components/LegalFooter';
 import BuildBadge from '../components/BuildBadge';
+import { isFacebookAuthConfigured, isGoogleAuthConfigured } from '../config/auth';
 import { useLanguage } from '../context/LanguageContext';
 import { colors, spacing, typography } from '../theme';
 
+function SocialLoginPanelLazy() {
+  const Panel = require('../components/SocialLoginPanel').default as React.ComponentType;
+  return <Panel />;
+}
+
 export default function LoginScreen() {
   const { t } = useLanguage();
+  const betaOnly = !__DEV__ && !isGoogleAuthConfigured() && !isFacebookAuthConfigured();
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -21,7 +28,7 @@ export default function LoginScreen() {
         <Text style={[typography.h1, styles.title, { color: colors.primary }]}>{t('login.title')}</Text>
         <Text style={styles.subtitle}>{t('login.subtitle')}</Text>
 
-        <SocialLoginPanel />
+        {betaOnly ? <BetaLoginPanel /> : <SocialLoginPanelLazy />}
 
         <LegalFooter />
 

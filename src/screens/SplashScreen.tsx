@@ -17,7 +17,7 @@ interface Props {
 
 export default function SplashScreen({ onFinish, ready = false }: Props) {
   const { t } = useLanguage();
-  const opacity = useRef(new Animated.Value(0)).current;
+  const opacity = useRef(new Animated.Value(1)).current;
   const progress = useRef(new Animated.Value(0)).current;
   const [finished, setFinished] = useState(false);
   const readySince = useRef<number | null>(null);

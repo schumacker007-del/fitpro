@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useAppPreferences } from '../context/AppPreferencesContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useReminderSettings } from '../context/ReminderSettingsContext';
-import { applyReminderSchedule, cancelAllReminders } from '../services/reminderNotifications';
+import { applyReminderSchedule, cancelAllReminders, ensureNotificationHandler } from '../services/reminderNotifications';
 
 /** Reaplica lembretes ao abrir o app (ex.: após reinício do celular). */
 export default function ReminderBootstrap() {
@@ -12,6 +12,8 @@ export default function ReminderBootstrap() {
 
   useEffect(() => {
     if (!loaded || !preferencesLoaded) return;
+
+    ensureNotificationHandler();
 
     if (!preferences.notificationsEnabled) {
       void cancelAllReminders();

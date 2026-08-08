@@ -14,15 +14,21 @@ export interface ReminderCopy {
   dietBody: string;
 }
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
+let notificationHandlerReady = false;
+
+export function ensureNotificationHandler(): void {
+  if (notificationHandlerReady) return;
+  notificationHandlerReady = true;
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+      shouldShowBanner: true,
+      shouldShowList: true,
+    }),
+  });
+}
 
 export async function ensureNotificationPermissions(): Promise<boolean> {
   if (Platform.OS === 'android') {

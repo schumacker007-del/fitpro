@@ -1,7 +1,13 @@
-import { ExerciseStep, MuscleGroupId, WorkoutPlan } from '../types';
+import { ExerciseStep, Gender, Goal, MuscleGroupId, WorkoutPlan } from '../types';
 import { LIBRARY_WORKOUTS } from './exerciseLibrary';
+import { FEMALE_CURATED_WORKOUTS } from './femaleCuratedWorkouts';
+import { MALE_CURATED_WORKOUTS } from './maleCuratedWorkouts';
+import { POWERLIFTING_WORKOUTS } from './powerlifting';
+import { getSuggestedWorkoutId } from './suggestedWorkoutsByProfile';
 
-export const CURATED_WORKOUTS: WorkoutPlan[] = [
+const BODYWEIGHT_EQUIPMENT = 'Peso do corpo';
+
+const BASE_CURATED_WORKOUTS: WorkoutPlan[] = [
   // ---------- FREE ----------
   {
     id: 'w-free-fullbody',
@@ -393,15 +399,133 @@ export const CURATED_WORKOUTS: WorkoutPlan[] = [
   },
 ];
 
+/** Planilhas importadas ficam gratuitas para visualização e treino guiado. */
+function unlockPlanillaWorkout(workout: WorkoutPlan): WorkoutPlan {
+  if (!workout.programId) return workout;
+  return {
+    ...workout,
+    tier: 'free',
+    exercises: workout.exercises.map((e) => ({ ...e, tier: 'free' })),
+  };
+}
+
+export const CURATED_WORKOUTS: WorkoutPlan[] = [
+  ...BASE_CURATED_WORKOUTS,
+  ...FEMALE_CURATED_WORKOUTS.map(unlockPlanillaWorkout),
+  ...MALE_CURATED_WORKOUTS.map(unlockPlanillaWorkout),
+];
+
+/** Treinos curados visíveis na listagem principal, filtrados por sexo do perfil. */
+export function getVisibleCuratedWorkouts(gender?: Gender): WorkoutPlan[] {
+  return CURATED_WORKOUTS.filter((w) => {
+    if (w.hidden) return false;
+    if (!w.audience) return true;
+    if (!gender || gender === 'outro') return true;
+    return w.audience === gender;
+  });
+}
+
+/** Agrupa treinos de planilha (programId) para seções na UI. */
+export function groupWorkoutsByProgram(workouts: WorkoutPlan[]): { programId: string; items: WorkoutPlan[] }[] {
+  const map = new Map<string, WorkoutPlan[]>();
+  const standalone: WorkoutPlan[] = [];
+  for (const w of workouts) {
+    if (!w.programId) {
+      standalone.push(w);
+      continue;
+    }
+    const list = map.get(w.programId) ?? [];
+    list.push(w);
+    map.set(w.programId, list);
+  }
+  const groups = [...map.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([programId, items]) => ({
+      programId,
+      items: items.sort((a, b) => a.title.localeCompare(b.title)),
+    }));
+  return groups;
+}
+
 /**
  * Todos os planos: os treinos curados (mostrados na aba Treinos) + a biblioteca
  * completa de exercícios por grupo muscular (planos "hidden", usados na busca
  * por grupo muscular e para abrir detalhes/treino guiado de qualquer exercício).
  */
-export const WORKOUTS: WorkoutPlan[] = [...CURATED_WORKOUTS, ...LIBRARY_WORKOUTS];
+export const WORKOUTS: WorkoutPlan[] = [...CURATED_WORKOUTS, ...LIBRARY_WORKOUTS, ...POWERLIFTING_WORKOUTS];
 
-export function getWorkoutsForGoal(goal: string) {
-  return CURATED_WORKOUTS.filter((w) => w.goal === goal || goal === 'manter_forma');
+export function isNoEquipmentExercise(exercise: ExerciseStep): boolean {
+  if (!exercise.equipment) return true;
+  return exercise.equipment === BODYWEIGHT_EQUIPMENT;
+}
+
+export function isNoEquipmentWorkout(workout: WorkoutPlan): boolean {
+  if (/sem equipamento/i.test(workout.title)) return true;
+  if (workout.exercises.length === 0) return false;
+  return workout.exercises.every(isNoEquipmentExercise);
+}
+
+function isHomeLibraryExercise(exercise: ExerciseStep): boolean {
+  if (/sem equipamento/i.test(exercise.name)) return true;
+  return exercise.equipment === BODYWEIGHT_EQUIPMENT;
+}
+
+export interface HomeLibraryExercise {
+  workoutId: string;
+  workoutTitle: string;
+  exercise: ExerciseStep;
+}
+
+/** Treinos prontos sem equipamento (curados + biblioteca com todos os exercícios bodyweight). */
+export function getHomeWorkouts(): WorkoutPlan[] {
+  const seen = new Set<string>();
+  const result: WorkoutPlan[] = [];
+
+  for (const workout of CURATED_WORKOUTS) {
+    if (workout.hidden || !isNoEquipmentWorkout(workout) || seen.has(workout.id)) continue;
+    seen.add(workout.id);
+    result.push(workout);
+  }
+
+  for (const workout of LIBRARY_WORKOUTS) {
+    if (!isNoEquipmentWorkout(workout) || seen.has(workout.id)) continue;
+    seen.add(workout.id);
+    result.push(workout);
+  }
+
+  return result;
+}
+
+/** Exercícios avulsos da biblioteca (bodyweight ou "sem equipamento") em treinos mistos. */
+export function getHomeLibraryExercises(): HomeLibraryExercise[] {
+  const seen = new Set<string>();
+  const result: HomeLibraryExercise[] = [];
+
+  for (const workout of LIBRARY_WORKOUTS) {
+    if (isNoEquipmentWorkout(workout)) continue;
+
+    for (const exercise of workout.exercises) {
+      if (!isHomeLibraryExercise(exercise) || seen.has(exercise.id)) continue;
+      seen.add(exercise.id);
+      result.push({ workoutId: workout.id, workoutTitle: workout.title, exercise });
+    }
+  }
+
+  return result;
+}
+
+export function getWorkoutsForGoal(goal: Goal, gender?: Gender) {
+  const matches = getVisibleCuratedWorkouts(gender).filter((w) => {
+    if (goal === 'condicionamento_fisico') {
+      return w.goal === 'perder_peso' || w.goal === 'manter_forma';
+    }
+    return w.goal === goal || goal === 'manter_forma';
+  });
+  const suggestedId = getSuggestedWorkoutId(gender, goal);
+  if (!suggestedId) return matches;
+  const suggested = matches.find((w) => w.id === suggestedId);
+  if (!suggested) return matches;
+  return [suggested, ...matches.filter((w) => w.id !== suggestedId)];
 }
 
 export interface ExerciseWithWorkout extends ExerciseStep {
@@ -409,17 +533,44 @@ export interface ExerciseWithWorkout extends ExerciseStep {
   workoutTitle: string;
 }
 
-/** Retorna todos os exercícios (de todos os treinos) que trabalham um grupo muscular, sem duplicar. */
+/** Retorna exercícios da biblioteca GuiFit por grupo muscular, sem duplicar. */
 export function getExercisesForMuscleGroup(muscleGroup: MuscleGroupId): ExerciseWithWorkout[] {
   const seen = new Set<string>();
   const result: ExerciseWithWorkout[] = [];
-  for (const workout of WORKOUTS) {
+  for (const workout of LIBRARY_WORKOUTS) {
     for (const exercise of workout.exercises) {
-      if (exercise.primaryMuscles.includes(muscleGroup) && !seen.has(exercise.id)) {
-        seen.add(exercise.id);
-        result.push({ ...exercise, workoutId: workout.id, workoutTitle: workout.title });
-      }
+      if (!exerciseMatchesMuscleGroup(exercise, muscleGroup) || seen.has(exercise.id)) continue;
+      seen.add(exercise.id);
+      result.push({ ...exercise, workoutId: workout.id, workoutTitle: workout.title });
     }
   }
   return result;
+}
+
+function exerciseMatchesMuscleGroup(exercise: ExerciseStep, muscleGroup: MuscleGroupId): boolean {
+  if (exercise.primaryMuscles.includes(muscleGroup)) return true;
+
+  // Compat: exercícios antigos no bucket posterior_gluteos
+  if (exercise.primaryMuscles.includes('posterior_gluteos')) {
+    const bucket = classifyPosteriorExercise(exercise);
+    if (muscleGroup === 'gluteos') return bucket === 'gluteos';
+    if (muscleGroup === 'isquiotibiais') return bucket === 'isquiotibiais';
+    if (muscleGroup === 'posterior_gluteos') return true;
+  }
+  return false;
+}
+
+function classifyPosteriorExercise(exercise: ExerciseStep): 'gluteos' | 'isquiotibiais' {
+  const label = `${exercise.name} ${exercise.muscleGroup}`.toLowerCase();
+  if (
+    label.includes('glúteo') ||
+    label.includes('gluteo') ||
+    label.includes('hip thrust') ||
+    label.includes('elevação pélvica') ||
+    label.includes('abdutora') ||
+    label.includes('adutora')
+  ) {
+    return 'gluteos';
+  }
+  return 'isquiotibiais';
 }

@@ -2,31 +2,61 @@ import { Ionicons } from '@expo/vector-icons';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, FlatList, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ExerciseAnimation from '../components/ExerciseAnimation';
+import InjuryCautionBanner from '../components/InjuryCautionBanner';
 import { Card, Pill, PrimaryButton, ProBadge } from '../components/ui';
 import { useCustomWorkouts } from '../context/CustomWorkoutContext';
+import { useLanguage } from '../context/LanguageContext';
 import { useUser } from '../context/UserContext';
 import { getMuscleGroup } from '../data/muscleGroups';
 import { RESPONSIBLE_PROFESSIONAL } from '../data/professional';
 import { WORKOUTS } from '../data/workouts';
+import { PreventScreenCapture, shouldPreventScreenCapture } from '../hooks/usePreventScreenCapture';
 import { WorkoutsStackParamList } from '../navigation/types';
 import { colors, spacing, typography } from '../theme';
+import { getMatchingInjuriesForExercise } from '../utils/injuryCaution';
 
 export default function WorkoutDetailScreen() {
   const route = useRoute<RouteProp<WorkoutsStackParamList, 'WorkoutDetail'>>();
   const navigation = useNavigation<NativeStackNavigationProp<WorkoutsStackParamList, 'WorkoutDetail'>>();
-  const { planTier } = useUser();
+  const { planTier, isPowerliftingAdvancedActive, profile } = useUser();
+  const { t } = useLanguage();
   const { getCustomWorkout } = useCustomWorkouts();
   const workout = WORKOUTS.find((w) => w.id === route.params.workoutId) ?? getCustomWorkout(route.params.workoutId);
 
-  if (!workout) return null;
+  const isAdvancedWorkout = workout?.level === 'avancado';
+  const blockCapture = shouldPreventScreenCapture(workout, isPowerliftingAdvancedActive);
 
-  const isLocked = workout.tier === 'pro' && planTier === 'free';
+  if (!workout) {
+    return (
+      <SafeAreaView style={styles.safe} edges={['top']}>
+        <View style={styles.header}>
+          <Pressable onPress={() => navigation.goBack()} style={styles.backBtn}>
+            <Ionicons name="chevron-back" size={22} color={colors.text} />
+          </Pressable>
+          <Text style={[typography.h3, { color: colors.text }]} numberOfLines={1}>
+            {t('workouts.title')}
+          </Text>
+          <View style={{ width: 28 }} />
+        </View>
+        <View style={styles.loadingWrap}>
+          <Ionicons name="alert-circle-outline" size={48} color={colors.textMuted} />
+          <Text style={styles.lockedTitle}>Treino não encontrado</Text>
+          <Text style={styles.lockedSubtitle}>Esse treino não está mais disponível ou o link está incorreto.</Text>
+          <PrimaryButton label="Voltar" icon="arrow-back" onPress={() => navigation.goBack()} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  const isAdvancedLocked = isAdvancedWorkout && !isPowerliftingAdvancedActive;
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
+    <>
+      <PreventScreenCapture active={blockCapture} />
+      <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.header}>
         <Pressable onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="chevron-back" size={22} color={colors.text} />
@@ -43,18 +73,16 @@ export default function WorkoutDetailScreen() {
         )}
       </View>
 
-      {isLocked ? (
+      {isAdvancedLocked ? (
         <View style={styles.lockedWrap}>
           <Ionicons name="lock-closed" size={36} color={colors.gold} />
-          <Text style={styles.lockedTitle}>Treino exclusivo do plano Pro</Text>
-          <Text style={styles.lockedSubtitle}>
-            Desbloqueie esse e outros treinos completos assinando o FitPro Pro.
-          </Text>
+          <Text style={styles.lockedTitle}>{t('workoutDetail.advancedLockedTitle')}</Text>
+          <Text style={styles.lockedSubtitle}>{t('workoutDetail.advancedLockedSubtitle')}</Text>
           <PrimaryButton
-            label="Ver plano Pro"
-            icon="star"
+            label={t('workoutDetail.unlockAdvanced')}
+            icon="trophy"
             variant="gold"
-            onPress={() => (navigation.getParent() as any)?.navigate('Perfil', { screen: 'Paywall' })}
+            onPress={() => navigation.navigate('PowerliftingAdvancedPaywall')}
           />
         </View>
       ) : (
@@ -77,11 +105,9 @@ export default function WorkoutDetailScreen() {
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.startTitle}>
-                      {planTier === 'pro' ? 'Iniciar treino guiado' : 'Modo Treino Ativo (Pro)'}
+                      {planTier === 'pro' ? t('workoutDetail.startGuided') : t('workoutDetail.activeModePro')}
                     </Text>
-                    <Text style={styles.startSubtitle}>
-                      Timer de descanso, esforço (RPE) e progressão de carga automática.
-                    </Text>
+                    <Text style={styles.startSubtitle}>{t('workoutDetail.startSubtitle')}</Text>
                   </View>
                 </Card>
               </Pressable>
@@ -89,13 +115,17 @@ export default function WorkoutDetailScreen() {
               <View style={styles.credentialRow}>
                 <Ionicons name="ribbon-outline" size={14} color={colors.primary} />
                 <Text style={styles.credentialText}>
-                  Ficha revisada por {RESPONSIBLE_PROFESSIONAL.name} · {RESPONSIBLE_PROFESSIONAL.credential}
+                  {t('workoutDetail.reviewedBy', {
+                    name: RESPONSIBLE_PROFESSIONAL.name,
+                    credential: RESPONSIBLE_PROFESSIONAL.credential,
+                  })}
                 </Text>
               </View>
             </View>
           }
           renderItem={({ item, index }) => {
             const itemLocked = item.tier === 'pro' && planTier === 'free';
+            const injuryMatches = getMatchingInjuriesForExercise(item, profile?.injuryAreas);
             return (
               <Pressable
                 onPress={() =>
@@ -108,6 +138,7 @@ export default function WorkoutDetailScreen() {
                   <View style={styles.exerciseThumb}>
                     <ExerciseAnimation
                       kind={item.animation}
+                      exerciseId={item.id}
                       size={64}
                       highlightColor={getMuscleGroup(item.primaryMuscles[0]).color}
                     />
@@ -124,6 +155,9 @@ export default function WorkoutDetailScreen() {
                       <Pill label={`${item.sets}x ${item.reps}`} tone="primary" />
                       <Pill label={item.muscleGroup} />
                     </View>
+                    {injuryMatches.length > 0 ? (
+                      <InjuryCautionBanner injuries={injuryMatches} compact />
+                    ) : null}
                   </View>
                   <Ionicons
                     name={itemLocked ? 'lock-closed' : 'chevron-forward'}
@@ -137,11 +171,13 @@ export default function WorkoutDetailScreen() {
         />
       )}
     </SafeAreaView>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
+  loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',

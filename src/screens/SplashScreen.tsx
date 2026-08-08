@@ -7,6 +7,7 @@ import { colors, spacing } from '../theme';
 const SPLASH_IMAGE = require('../../assets/splash/splash-hero.png');
 const SPLASH_MAX_MS = 2500;
 const SPLASH_MIN_MS = 600;
+const SPLASH_EMERGENCY_MS = 10000;
 
 interface Props {
   onFinish: () => void;
@@ -42,10 +43,7 @@ export default function SplashScreen({ onFinish, ready = false }: Props) {
         useNativeDriver: false,
       }),
     ]).start();
-
-    const maxTimer = setTimeout(finish, SPLASH_MAX_MS);
-    return () => clearTimeout(maxTimer);
-  }, [finish, opacity, progress]);
+  }, [opacity, progress]);
 
   useEffect(() => {
     if (!ready || finished) return;
@@ -55,6 +53,17 @@ export default function SplashScreen({ onFinish, ready = false }: Props) {
     const timer = setTimeout(finish, wait);
     return () => clearTimeout(timer);
   }, [ready, finished, finish]);
+
+  useEffect(() => {
+    if (!ready || finished) return;
+    const maxTimer = setTimeout(finish, SPLASH_MAX_MS);
+    return () => clearTimeout(maxTimer);
+  }, [ready, finished, finish]);
+
+  useEffect(() => {
+    const emergencyTimer = setTimeout(finish, SPLASH_EMERGENCY_MS);
+    return () => clearTimeout(emergencyTimer);
+  }, [finish]);
 
   const progressWidth = progress.interpolate({
     inputRange: [0, 1],

@@ -304,6 +304,19 @@ export default function SocialLoginPanel() {
         >
           <Text style={styles.devBtnText}>{t('login.devContinue')}</Text>
         </Pressable>
+      ) : !googleConfigured && !facebookConfigured ? (
+        <Pressable
+          onPress={() =>
+            void loginWithSession({
+              provider: 'apple',
+              userId: `beta-${Date.now()}`,
+              name: 'Beta Tester',
+            })
+          }
+          style={({ pressed }) => [styles.devBtn, pressed && styles.providerPressed]}
+        >
+          <Text style={styles.devBtnText}>{t('login.betaContinue')}</Text>
+        </Pressable>
       ) : null}
     </View>
   );

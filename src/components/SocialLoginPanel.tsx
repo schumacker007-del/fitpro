@@ -1,187 +1,13 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
-import * as AppleAuthentication from 'expo-apple-authentication';
-import * as Facebook from 'expo-auth-session/providers/facebook';
-import * as Google from 'expo-auth-session/providers/google';
-import * as WebBrowser from 'expo-web-browser';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
-import { authConfig, isFacebookAuthConfigured, isGoogleAuthConfigured } from '../config/auth';
-import { AuthUserSession, useAuth } from '../context/AuthContext';
+import { Alert, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { isFacebookAuthConfigured, isGoogleAuthConfigured } from '../config/auth';
+import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { TranslationKey } from '../i18n/translations';
+import ProviderButton from './oauth/ProviderButton';
 import { colors, spacing } from '../theme';
-
-WebBrowser.maybeCompleteAuthSession();
-
-async function fetchGoogleProfile(accessToken: string): Promise<Pick<AuthUserSession, 'email' | 'name'>> {
-  const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
-  if (!response.ok) return {};
-  const data = (await response.json()) as { email?: string; name?: string };
-  return { email: data.email, name: data.name };
-}
-
-async function fetchFacebookProfile(accessToken: string): Promise<Pick<AuthUserSession, 'email' | 'name'>> {
-  const response = await fetch(
-    `https://graph.facebook.com/me?fields=id,name,email&access_token=${encodeURIComponent(accessToken)}`,
-  );
-  if (!response.ok) return {};
-  const data = (await response.json()) as { email?: string; name?: string };
-  return { email: data.email, name: data.name };
-}
-
-function ProviderButton({
-  label,
-  icon,
-  bg,
-  textColor,
-  busy,
-  disabled,
-  onPress,
-}: {
-  label: string;
-  icon: keyof typeof Ionicons.glyphMap;
-  bg: string;
-  textColor: string;
-  busy?: boolean;
-  disabled?: boolean;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable
-      onPress={onPress}
-      disabled={disabled}
-      style={({ pressed }) => [styles.providerBtn, { backgroundColor: bg }, pressed && styles.providerPressed]}
-    >
-      {busy ? (
-        <ActivityIndicator color={textColor} />
-      ) : (
-        <>
-          <Ionicons name={icon} size={20} color={textColor} />
-          <Text style={[styles.providerLabel, { color: textColor }]}>{label}</Text>
-        </>
-      )}
-    </Pressable>
-  );
-}
-
-function GoogleLoginButton({
-  disabled,
-  onBusyChange,
-}: {
-  disabled: boolean;
-  onBusyChange: (busy: boolean) => void;
-}) {
-  const { t } = useLanguage();
-  const { loginWithSession } = useAuth();
-  const [, googleResponse, promptGoogle] = Google.useAuthRequest({
-    webClientId: authConfig.google.webClientId,
-    iosClientId: authConfig.google.iosClientId,
-    androidClientId: authConfig.google.androidClientId,
-  });
-
-  useEffect(() => {
-    if (!googleResponse) return;
-    void (async () => {
-      try {
-        if (googleResponse.type === 'success') {
-          const accessToken = googleResponse.authentication?.accessToken;
-          if (!accessToken) throw new Error('missing_token');
-          const profile = await fetchGoogleProfile(accessToken);
-          await loginWithSession({
-            provider: 'google',
-            userId: profile.email ?? accessToken.slice(0, 24),
-            email: profile.email,
-            name: profile.name,
-          });
-        } else if (googleResponse.type === 'error') {
-          Alert.alert(t('login.errorTitle'), t('login.errorProvider'));
-        }
-      } catch {
-        Alert.alert(t('login.errorTitle'), t('login.errorProvider'));
-      } finally {
-        onBusyChange(false);
-      }
-    })();
-  }, [googleResponse, loginWithSession, onBusyChange, t]);
-
-  const [busy, setBusy] = useState(false);
-
-  return (
-    <ProviderButton
-      label={t('login.google')}
-      icon="logo-google"
-      bg="#FFFFFF"
-      textColor="#111827"
-      busy={busy}
-      disabled={disabled}
-      onPress={() => {
-        setBusy(true);
-        onBusyChange(true);
-        void promptGoogle();
-      }}
-    />
-  );
-}
-
-function FacebookLoginButton({
-  disabled,
-  onBusyChange,
-}: {
-  disabled: boolean;
-  onBusyChange: (busy: boolean) => void;
-}) {
-  const { t } = useLanguage();
-  const { loginWithSession } = useAuth();
-  const [, facebookResponse, promptFacebook] = Facebook.useAuthRequest({
-    clientId: authConfig.facebook.appId,
-  });
-
-  useEffect(() => {
-    if (!facebookResponse) return;
-    void (async () => {
-      try {
-        if (facebookResponse.type === 'success') {
-          const accessToken = facebookResponse.authentication?.accessToken;
-          if (!accessToken) throw new Error('missing_token');
-          const profile = await fetchFacebookProfile(accessToken);
-          await loginWithSession({
-            provider: 'facebook',
-            userId: profile.email ?? accessToken.slice(0, 24),
-            email: profile.email,
-            name: profile.name,
-          });
-        } else if (facebookResponse.type === 'error') {
-          Alert.alert(t('login.errorTitle'), t('login.errorProvider'));
-        }
-      } catch {
-        Alert.alert(t('login.errorTitle'), t('login.errorProvider'));
-      } finally {
-        onBusyChange(false);
-      }
-    })();
-  }, [facebookResponse, loginWithSession, onBusyChange, t]);
-
-  const [busy, setBusy] = useState(false);
-
-  return (
-    <ProviderButton
-      label={t('login.facebook')}
-      icon="logo-facebook"
-      bg="#1877F2"
-      textColor="#FFFFFF"
-      busy={busy}
-      disabled={disabled}
-      onPress={() => {
-        setBusy(true);
-        onBusyChange(true);
-        void promptFacebook();
-      }}
-    />
-  );
-}
 
 function UnconfiguredProviderButton({
   labelKey,
@@ -218,7 +44,11 @@ export default function SocialLoginPanel() {
   const facebookConfigured = isFacebookAuthConfigured();
 
   useEffect(() => {
-    AppleAuthentication.isAvailableAsync().then(setAppleAvailable);
+    if (Platform.OS !== 'ios') return;
+    void import('expo-apple-authentication')
+      .then((AppleAuthentication) => AppleAuthentication.isAvailableAsync())
+      .then(setAppleAvailable)
+      .catch(() => setAppleAvailable(false));
   }, []);
 
   const handleApple = async () => {
@@ -228,6 +58,7 @@ export default function SocialLoginPanel() {
     }
     setBusy(true);
     try {
+      const AppleAuthentication = await import('expo-apple-authentication');
       const credential = await AppleAuthentication.signInAsync({
         requestedScopes: [
           AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
@@ -253,9 +84,23 @@ export default function SocialLoginPanel() {
     }
   };
 
+  const GoogleLoginButton = googleConfigured
+    ? (require('./oauth/GoogleLoginButton').default as React.ComponentType<{
+        disabled: boolean;
+        onBusyChange: (busy: boolean) => void;
+      }>)
+    : null;
+
+  const FacebookLoginButton = facebookConfigured
+    ? (require('./oauth/FacebookLoginButton').default as React.ComponentType<{
+        disabled: boolean;
+        onBusyChange: (busy: boolean) => void;
+      }>)
+    : null;
+
   return (
     <View style={styles.providers}>
-      {googleConfigured ? (
+      {GoogleLoginButton ? (
         <GoogleLoginButton disabled={busy} onBusyChange={setBusy} />
       ) : (
         <UnconfiguredProviderButton
@@ -279,7 +124,7 @@ export default function SocialLoginPanel() {
         />
       ) : null}
 
-      {facebookConfigured ? (
+      {FacebookLoginButton ? (
         <FacebookLoginButton disabled={busy} onBusyChange={setBusy} />
       ) : (
         <UnconfiguredProviderButton
@@ -337,18 +182,7 @@ export default function SocialLoginPanel() {
 
 const styles = StyleSheet.create({
   providers: { gap: spacing.sm },
-  providerBtn: {
-    minHeight: 52,
-    borderRadius: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
   providerPressed: { opacity: 0.9 },
-  providerLabel: { fontWeight: '700', fontSize: 15 },
   devBtn: {
     minHeight: 44,
     borderRadius: 12,

@@ -5,11 +5,7 @@ import { ActivityIndicator, InteractionManager, StyleSheet, Text, View } from 'r
 import { useUser } from '../context/UserContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
-import LoginScreen from '../screens/LoginScreen';
-import OnboardingScreen from '../screens/OnboardingScreen';
-import PrivacyPolicyScreen from '../screens/PrivacyPolicyScreen';
 import SplashScreen from '../screens/SplashScreen';
-import TermsOfUseScreen from '../screens/TermsOfUseScreen';
 import { colors } from '../theme';
 import { RootStackParamList } from './types';
 
@@ -90,8 +86,8 @@ export default function RootNavigator() {
             animation: 'fade',
           }}
         >
-          <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+          <Stack.Screen name="Login" getComponent={() => require('../screens/LoginScreen').default} />
+          <Stack.Screen name="Onboarding" getComponent={() => require('../screens/OnboardingScreen').default} />
           <Stack.Screen
             name="Main"
             getComponent={() => require('./MainTabs').default}
@@ -104,12 +100,12 @@ export default function RootNavigator() {
           />
           <Stack.Screen
             name="PrivacyPolicy"
-            component={PrivacyPolicyScreen}
+            getComponent={() => require('../screens/PrivacyPolicyScreen').default}
             options={{ presentation: 'modal' }}
           />
           <Stack.Screen
             name="TermsOfUse"
-            component={TermsOfUseScreen}
+            getComponent={() => require('../screens/TermsOfUseScreen').default}
             options={{ presentation: 'modal' }}
           />
         </Stack.Navigator>

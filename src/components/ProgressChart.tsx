@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { useLanguage } from '../context/LanguageContext';
 import { colors, spacing } from '../theme';
 import { TrainingLogEntry } from '../types';
 
@@ -11,14 +12,13 @@ function rpeColor(value: number) {
 
 /** Gráfico de barras simples (sem lib externa) mostrando a evolução do RPE ao longo das últimas sessões. */
 export default function ProgressChart({ logs }: { logs: TrainingLogEntry[] }) {
+  const { t } = useLanguage();
   const recent = [...logs].reverse().slice(-10); // mais antigo -> mais recente, últimos 10
 
   if (recent.length === 0) {
     return (
       <View style={styles.emptyWrap}>
-        <Text style={styles.emptyText}>
-          Ainda não há registros. Complete um treino no Modo Treino Ativo pra começar a acompanhar sua evolução.
-        </Text>
+        <Text style={styles.emptyText}>{t('progressChart.empty')}</Text>
       </View>
     );
   }
@@ -33,7 +33,7 @@ export default function ProgressChart({ logs }: { logs: TrainingLogEntry[] }) {
           </View>
         ))}
       </View>
-      <Text style={styles.axisLabel}>Esforço (RPE) nas últimas sessões registradas</Text>
+      <Text style={styles.axisLabel}>{t('progressChart.axisLabel')}</Text>
     </View>
   );
 }

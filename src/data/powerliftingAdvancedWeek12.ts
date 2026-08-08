@@ -1,0 +1,147 @@
+import { WorkoutPlan } from '../types';
+import { percentLift } from './powerliftingAdvancedWeek1';
+
+const DUAL_TOP_SET_NOTE = (first: string, second: string) => [
+  'Séries de trabalho:',
+  first,
+  `Em seguida: ${second}`,
+];
+
+const MEET_ATTEMPTS = (maxPercent: number, optionalHigher?: number) => [
+  'Após o aquecimento, execute as tentativas em ordem:',
+  '1×2 @ 80% · 1×1 @ 90% · 1×1 @ 95% · 1×1 @ 100%',
+  `Tentativa de max: 1×1 @ ${maxPercent}% do 1RM.`,
+  ...(optionalHigher
+    ? [`Se sobrar energia e a técnica estiver sólida: 1×1 @ ${optionalHigher}% (tentativa extra).`]
+    : []),
+  'Descanso de 3–5 min entre tentativas. Use spotter/segurança acima de 90%.',
+];
+
+export const ADVANCED_WEEK12_WORKOUTS: WorkoutPlan[] = [
+  {
+    id: 'pl-adv-w12-seg',
+    title: 'Semana 12 · Segunda',
+    goal: 'ganhar_massa',
+    level: 'avancado',
+    durationMinutes: 75,
+    tier: 'free',
+    hidden: true,
+    exercises: [
+      percentLift({
+        id: 'pl-adv-w12-seg-deadlift',
+        name: 'Levantamento terra',
+        muscleGroup: 'Posterior / Costas',
+        primaryMuscles: ['costas', 'posterior_gluteos'],
+        animation: 'hip_hinge',
+        equipment: 'Barra',
+        sets: 2,
+        reps: '3',
+        workPercent: 70,
+        pyramid: ['30% × 6', '50% × 4', '60% × 3'],
+        extraTips: ['Semana 12: quinta e sexta são descanso. Sábado é dia de teste de max.'],
+      }),
+      percentLift({
+        id: 'pl-adv-w12-seg-bench',
+        name: 'Supino (Sup)',
+        muscleGroup: 'Peito',
+        primaryMuscles: ['peito', 'triceps'],
+        animation: 'chest_press',
+        equipment: 'Barra',
+        sets: 1,
+        reps: '3',
+        workPercent: 75,
+        pyramid: ['30% × 6', '50% × 4', '60% × 3', '70% × 3'],
+      }),
+    ],
+  },
+  {
+    id: 'pl-adv-w12-qua',
+    title: 'Semana 12 · Quarta',
+    goal: 'ganhar_massa',
+    level: 'avancado',
+    durationMinutes: 70,
+    tier: 'free',
+    hidden: true,
+    exercises: [
+      percentLift({
+        id: 'pl-adv-w12-qua-squat',
+        name: 'Agachamento (Agx)',
+        muscleGroup: 'Quadríceps',
+        primaryMuscles: ['quadriceps', 'posterior_gluteos'],
+        animation: 'squat',
+        equipment: 'Barra',
+        sets: 2,
+        reps: '2',
+        workPercent: 60,
+        pyramid: ['30% × 6', '50% × 4'],
+        extraInstructions: DUAL_TOP_SET_NOTE('2×2 @ 60% do 1RM', '1×3 @ 70% do 1RM'),
+      }),
+      percentLift({
+        id: 'pl-adv-w12-qua-bench',
+        name: 'Supino (Sup)',
+        muscleGroup: 'Peito',
+        primaryMuscles: ['peito', 'triceps'],
+        animation: 'chest_press',
+        equipment: 'Barra',
+        sets: 2,
+        reps: '3',
+        workPercent: 70,
+        pyramid: ['30% × 6', '50% × 4', '60% × 3'],
+      }),
+    ],
+  },
+  {
+    id: 'pl-adv-w12-sab',
+    title: 'Semana 12 · Sábado',
+    goal: 'ganhar_massa',
+    level: 'avancado',
+    durationMinutes: 150,
+    tier: 'free',
+    hidden: true,
+    exercises: [
+      percentLift({
+        id: 'pl-adv-w12-sab-squat',
+        name: 'Agachamento (Agx) — dia de max',
+        muscleGroup: 'Quadríceps',
+        primaryMuscles: ['quadriceps', 'posterior_gluteos'],
+        animation: 'squat',
+        equipment: 'Barra',
+        sets: 1,
+        reps: '1 @ 105%',
+        workPercent: 105,
+        pyramid: ['30% × 5', '50% × 4', '70% × 3'],
+        extraInstructions: MEET_ATTEMPTS(105),
+        extraTips: ['Simulação de dia de competição — priorize técnica e segurança em todas as tentativas.'],
+      }),
+      percentLift({
+        id: 'pl-adv-w12-sab-bench',
+        name: 'Supino (Sup) — dia de max',
+        muscleGroup: 'Peito',
+        primaryMuscles: ['peito', 'triceps'],
+        animation: 'chest_press',
+        equipment: 'Barra',
+        sets: 1,
+        reps: '1 @ 105%',
+        workPercent: 105,
+        pyramid: ['30% × 5', '50% × 4', '70% × 3'],
+        extraInstructions: MEET_ATTEMPTS(105, 110),
+      }),
+      percentLift({
+        id: 'pl-adv-w12-sab-deadlift',
+        name: 'Levantamento terra — dia de max',
+        muscleGroup: 'Posterior / Costas',
+        primaryMuscles: ['costas', 'posterior_gluteos'],
+        animation: 'hip_hinge',
+        equipment: 'Barra',
+        sets: 1,
+        reps: '1 @ 105%',
+        workPercent: 105,
+        pyramid: ['50% × 5', '70% × 3'],
+        extraInstructions: MEET_ATTEMPTS(105, 110),
+        extraTips: ['Mantenha a barra rente ao corpo em todas as tentativas.'],
+      }),
+    ],
+  },
+];
+
+export const ADVANCED_WEEK12_IDS = ADVANCED_WEEK12_WORKOUTS.map((w) => w.id);

@@ -6,10 +6,12 @@ import { Alert, Linking, Pressable, ScrollView, StyleSheet, Text, TextInput, Vie
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card, PrimaryButton, SectionTitle, SelectableChip } from '../components/ui';
 import { useCustomPlan } from '../context/CustomPlanContext';
+import { useLanguage } from '../context/LanguageContext';
 import { useUser } from '../context/UserContext';
 import { RESPONSIBLE_PROFESSIONAL } from '../data/professional';
 import { ProfileStackParamList } from '../navigation/types';
 import { colors, spacing, typography } from '../theme';
+import { formatLocaleDate } from '../utils/formatLocaleDate';
 import { CustomPlanStatus, Goal, PlanFrequency, TrainingPlace } from '../types';
 
 const EQUIPMENT_OPTIONS = ['Peso do corpo', 'Halteres', 'Barra', 'Elásticos', 'Máquinas de academia', 'Cabo/Polia'];
@@ -17,6 +19,7 @@ const EQUIPMENT_OPTIONS = ['Peso do corpo', 'Halteres', 'Barra', 'Elásticos', '
 export default function CustomPlanScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<ProfileStackParamList, 'CustomPlan'>>();
   const { profile } = useUser();
+  const { locale } = useLanguage();
   const { latestRequest, createRequest } = useCustomPlan();
 
   const [frequency, setFrequency] = useState<PlanFrequency>('semanal');
@@ -100,7 +103,7 @@ export default function CustomPlanScreen() {
                 {statusLabel(latestRequest.status)}
               </Text>
               <Text style={styles.statusSubtitle}>
-                Última solicitação: {formatDate(latestRequest.createdAtISO)} · Ficha {latestRequest.frequency}
+                Última solicitação: {formatLocaleDate(locale, latestRequest.createdAtISO)} · Ficha {latestRequest.frequency}
               </Text>
             </View>
           </Card>
@@ -114,7 +117,7 @@ export default function CustomPlanScreen() {
 
         <SectionTitle title="Objetivo principal" />
         <View style={styles.chipRow}>
-          <SelectableChip label="Perder peso" selected={goal === 'perder_peso'} onPress={() => setGoal('perder_peso')} />
+          <SelectableChip label="Emagrecimento" selected={goal === 'perder_peso'} onPress={() => setGoal('perder_peso')} />
           <SelectableChip label="Ganhar massa" selected={goal === 'ganhar_massa'} onPress={() => setGoal('ganhar_massa')} />
           <SelectableChip label="Manter forma" selected={goal === 'manter_forma'} onPress={() => setGoal('manter_forma')} />
         </View>
@@ -179,8 +182,9 @@ export default function CustomPlanScreen() {
           />
         </View>
         <Text style={styles.fine}>
-          Sua solicitação é enviada por WhatsApp para {RESPONSIBLE_PROFESSIONAL.name} ({RESPONSIBLE_PROFESSIONAL.credential}),
-          que monta sua ficha manualmente e te envia de volta pelo app ou pelo próprio WhatsApp.
+          Sua solicitação é enviada por WhatsApp para {RESPONSIBLE_PROFESSIONAL.name} ({RESPONSIBLE_PROFESSIONAL.credential}) —
+          {` ${RESPONSIBLE_PROFESSIONAL.phoneDisplay}`}. O professor monta sua ficha manualmente e te envia de volta pelo app ou
+          pelo próprio WhatsApp.
         </Text>
       </ScrollView>
     </SafeAreaView>
@@ -195,7 +199,7 @@ function buildWhatsAppMessage({
   request: { frequency: PlanFrequency; goal: Goal; daysPerWeek: number; trainingPlace: TrainingPlace; equipment: string[]; restrictions: string; notes: string };
 }) {
   const goalLabel =
-    request.goal === 'perder_peso' ? 'Perder peso' : request.goal === 'ganhar_massa' ? 'Ganhar massa' : 'Manter a forma';
+    request.goal === 'perder_peso' ? 'Emagrecimento' : request.goal === 'ganhar_massa' ? 'Ganhar massa' : 'Manter a forma';
   const placeLabel =
     request.trainingPlace === 'academia' ? 'Academia' : request.trainingPlace === 'casa' ? 'Casa' : 'Casa e academia';
 
@@ -226,10 +230,6 @@ function statusColor(status: CustomPlanStatus) {
   return colors.textMuted;
 }
 
-function formatDate(iso: string) {
-  const d = new Date(iso);
-  return d.toLocaleDateString('pt-BR');
-}
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },

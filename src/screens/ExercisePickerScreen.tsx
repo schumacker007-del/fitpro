@@ -6,9 +6,11 @@ import { Pressable, SectionList, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ExerciseAnimation from '../components/ExerciseAnimation';
 import { Card, PrimaryButton, SelectableChip } from '../components/ui';
+import { useLanguage } from '../context/LanguageContext';
 import { useWorkoutDraft } from '../context/WorkoutDraftContext';
 import { getMuscleGroup, MUSCLE_GROUPS } from '../data/muscleGroups';
 import { getExercisesForMuscleGroup } from '../data/workouts';
+import { muscleGroupLabelKey } from '../i18n/muscleGroupLabel';
 import { WorkoutsStackParamList } from '../navigation/types';
 import { colors, spacing, typography } from '../theme';
 import { MuscleGroupId } from '../types';
@@ -16,10 +18,16 @@ import { MuscleGroupId } from '../types';
 export default function ExercisePickerScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<WorkoutsStackParamList, 'ExercisePicker'>>();
   const { draft, addExercise, removeExercise, isSelected } = useWorkoutDraft();
+  const { t } = useLanguage();
   const [activeGroup, setActiveGroup] = useState<MuscleGroupId>('peito');
 
   const exercises = useMemo(() => getExercisesForMuscleGroup(activeGroup), [activeGroup]);
   const groupInfo = getMuscleGroup(activeGroup);
+  const groupLabel = t(muscleGroupLabelKey(activeGroup));
+  const finishLabel =
+    draft.exercises.length === 1
+      ? t('exercisePicker.finishOne')
+      : t('exercisePicker.finish', { count: draft.exercises.length });
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -27,23 +35,30 @@ export default function ExercisePickerScreen() {
         <Pressable onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="chevron-back" size={22} color={colors.text} />
         </Pressable>
-        <Text style={[typography.h3, { color: colors.text }]}>Adicionar exercícios</Text>
+        <Text style={[typography.h3, { color: colors.text }]}>{t('exercisePicker.title')}</Text>
         <View style={{ width: 22 }} />
       </View>
 
       <SectionList
-        sections={[{ title: groupInfo.label, data: exercises }]}
+        sections={[{ title: groupLabel, data: exercises }]}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
         ListHeaderComponent={
           <View style={styles.groupChipsWrap}>
             {MUSCLE_GROUPS.map((g) => (
-              <SelectableChip key={g.id} label={g.label} selected={activeGroup === g.id} onPress={() => setActiveGroup(g.id)} />
+              <SelectableChip
+                key={g.id}
+                label={t(muscleGroupLabelKey(g.id))}
+                selected={activeGroup === g.id}
+                onPress={() => setActiveGroup(g.id)}
+              />
             ))}
           </View>
         }
         renderSectionHeader={() => (
-          <Text style={styles.sectionHeader}>{exercises.length} exercícios em {groupInfo.label}</Text>
+          <Text style={styles.sectionHeader}>
+            {t('exercisePicker.countInGroup', { count: exercises.length, group: groupLabel })}
+          </Text>
         )}
         renderItem={({ item }) => {
           const selected = isSelected(item.id);
@@ -51,14 +66,14 @@ export default function ExercisePickerScreen() {
             <Pressable onPress={() => (selected ? removeExercise(item.id) : addExercise(item))}>
               <Card style={[styles.exerciseCard, selected && styles.exerciseCardSelected]}>
                 <View style={styles.thumb}>
-                  <ExerciseAnimation kind={item.animation} size={56} highlightColor={groupInfo.color} />
+                  <ExerciseAnimation kind={item.animation} exerciseId={item.id} size={56} highlightColor={groupInfo.color} />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.exerciseName} numberOfLines={1}>
                     {item.name}
                   </Text>
                   <Text style={styles.exerciseMeta}>
-                    {item.sets}x {item.reps} · descanso {item.restSeconds}s
+                    {item.sets}x {item.reps} · {t('exercisePicker.restMeta', { seconds: item.restSeconds })}
                   </Text>
                 </View>
                 <Ionicons
@@ -71,15 +86,11 @@ export default function ExercisePickerScreen() {
           );
         }}
         ItemSeparatorComponent={() => <View style={{ height: spacing.sm }} />}
-        ListEmptyComponent={<Text style={styles.empty}>Nenhum exercício cadastrado ainda pra esse grupo.</Text>}
+        ListEmptyComponent={<Text style={styles.empty}>{t('exercisePicker.empty')}</Text>}
       />
 
       <View style={styles.footer}>
-        <PrimaryButton
-          label={`Concluir (${draft.exercises.length} selecionado${draft.exercises.length === 1 ? '' : 's'})`}
-          icon="checkmark"
-          onPress={() => navigation.goBack()}
-        />
+        <PrimaryButton label={finishLabel} icon="checkmark" onPress={() => navigation.goBack()} />
       </View>
     </SafeAreaView>
   );
@@ -99,7 +110,7 @@ const styles = StyleSheet.create({
   groupChipsWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: spacing.md },
   sectionHeader: { color: colors.textMuted, fontSize: 12, fontWeight: '700', marginBottom: spacing.sm, textTransform: 'uppercase' },
   exerciseCard: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  exerciseCardSelected: { borderColor: colors.primary, backgroundColor: 'rgba(52,211,153,0.08)' },
+  exerciseCardSelected: { borderColor: colors.primary, backgroundColor: colors.primaryMutedLight },
   thumb: { borderRadius: 12, overflow: 'hidden' },
   exerciseName: { color: colors.text, fontWeight: '700', fontSize: 14 },
   exerciseMeta: { color: colors.textMuted, fontSize: 11, marginTop: 2 },

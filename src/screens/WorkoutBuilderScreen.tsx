@@ -7,16 +7,32 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import ExerciseAnimation from '../components/ExerciseAnimation';
 import { Card, PrimaryButton, SectionTitle, SelectableChip } from '../components/ui';
 import { useCustomWorkouts } from '../context/CustomWorkoutContext';
+import { useLanguage } from '../context/LanguageContext';
 import { useWorkoutDraft } from '../context/WorkoutDraftContext';
 import { getMuscleGroup } from '../data/muscleGroups';
+import { muscleGroupLabelKey } from '../i18n/muscleGroupLabel';
 import { WorkoutsStackParamList } from '../navigation/types';
 import { colors, spacing, typography } from '../theme';
+import { TranslationKey } from '../i18n/translations';
+
+const GOAL_KEYS: Record<string, TranslationKey> = {
+  perder_peso: 'onboarding.goal.perder_peso',
+  ganhar_massa: 'onboarding.goal.ganhar_massa',
+  manter_forma: 'onboarding.goal.manter_forma',
+};
+
+const LEVEL_KEYS: Record<string, TranslationKey> = {
+  iniciante: 'level.beginner',
+  intermediario: 'level.intermediate',
+  avancado: 'level.advanced',
+};
 
 export default function WorkoutBuilderScreen() {
   const route = useRoute<RouteProp<WorkoutsStackParamList, 'WorkoutBuilder'>>();
   const navigation = useNavigation<NativeStackNavigationProp<WorkoutsStackParamList, 'WorkoutBuilder'>>();
   const { getCustomWorkout, saveWorkout, deleteWorkout } = useCustomWorkouts();
   const { draft, initDraft, setName, setGoal, setLevel, removeExercise, updateExercise, moveExercise, clearDraft } = useWorkoutDraft();
+  const { t } = useLanguage();
 
   const editingId = route.params?.workoutId;
   const isEditing = !!editingId;
@@ -29,11 +45,11 @@ export default function WorkoutBuilderScreen() {
 
   const handleSave = async () => {
     if (!draft.name.trim()) {
-      Alert.alert('Dê um nome ao treino', 'Escolha um nome para identificar esse treino.');
+      Alert.alert(t('workoutBuilder.alertNameTitle'), t('workoutBuilder.alertNameBody'));
       return;
     }
     if (draft.exercises.length === 0) {
-      Alert.alert('Adicione exercícios', 'Selecione pelo menos um exercício antes de salvar.');
+      Alert.alert(t('workoutBuilder.alertExercisesTitle'), t('workoutBuilder.alertExercisesBody'));
       return;
     }
     const totalMinutes = Math.max(10, Math.round(draft.exercises.length * 6));
@@ -53,10 +69,10 @@ export default function WorkoutBuilderScreen() {
 
   const handleDelete = () => {
     if (!editingId) return;
-    Alert.alert('Excluir treino', 'Tem certeza que deseja excluir esse treino personalizado?', [
-      { text: 'Cancelar', style: 'cancel' },
+    Alert.alert(t('workoutBuilder.deleteTitle'), t('workoutBuilder.deleteBody'), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Excluir',
+        text: t('common.delete'),
         style: 'destructive',
         onPress: async () => {
           await deleteWorkout(editingId);
@@ -67,44 +83,72 @@ export default function WorkoutBuilderScreen() {
     ]);
   };
 
+  const exercisesSubtitle =
+    draft.exercises.length > 0
+      ? t('workoutBuilder.exercisesAdded', { count: draft.exercises.length })
+      : t('workoutBuilder.exercisesEmpty');
+
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.header}>
         <Pressable onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="close" size={22} color={colors.text} />
         </Pressable>
-        <Text style={[typography.h3, { color: colors.text }]}>{isEditing ? 'Editar treino' : 'Montar treino'}</Text>
+        <Text style={[typography.h3, { color: colors.text }]}>
+          {isEditing ? t('workoutBuilder.titleEdit') : t('workoutBuilder.titleCreate')}
+        </Text>
         <View style={{ width: 22 }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
-        <SectionTitle title="Nome do treino" />
+        <SectionTitle title={t('workoutBuilder.nameSection')} />
         <TextInput
           style={styles.input}
-          placeholder="Ex.: Treino ABC do professor João"
+          placeholder={t('workoutBuilder.namePlaceholder')}
           placeholderTextColor={colors.textMuted}
           value={draft.name}
           onChangeText={setName}
         />
 
-        <SectionTitle title="Objetivo" />
+        <SectionTitle title={t('workoutBuilder.goalSection')} />
         <View style={styles.chipRow}>
-          <SelectableChip label="Perder peso" selected={draft.goal === 'perder_peso'} onPress={() => setGoal('perder_peso')} />
-          <SelectableChip label="Ganhar massa" selected={draft.goal === 'ganhar_massa'} onPress={() => setGoal('ganhar_massa')} />
-          <SelectableChip label="Manter forma" selected={draft.goal === 'manter_forma'} onPress={() => setGoal('manter_forma')} />
+          <SelectableChip
+            label={t(GOAL_KEYS.perder_peso)}
+            selected={draft.goal === 'perder_peso'}
+            onPress={() => setGoal('perder_peso')}
+          />
+          <SelectableChip
+            label={t(GOAL_KEYS.ganhar_massa)}
+            selected={draft.goal === 'ganhar_massa'}
+            onPress={() => setGoal('ganhar_massa')}
+          />
+          <SelectableChip
+            label={t(GOAL_KEYS.manter_forma)}
+            selected={draft.goal === 'manter_forma'}
+            onPress={() => setGoal('manter_forma')}
+          />
         </View>
 
-        <SectionTitle title="Nível" />
+        <SectionTitle title={t('workoutBuilder.levelSection')} />
         <View style={styles.chipRow}>
-          <SelectableChip label="Iniciante" selected={draft.level === 'iniciante'} onPress={() => setLevel('iniciante')} />
-          <SelectableChip label="Intermediário" selected={draft.level === 'intermediario'} onPress={() => setLevel('intermediario')} />
-          <SelectableChip label="Avançado" selected={draft.level === 'avancado'} onPress={() => setLevel('avancado')} />
+          <SelectableChip
+            label={t(LEVEL_KEYS.iniciante)}
+            selected={draft.level === 'iniciante'}
+            onPress={() => setLevel('iniciante')}
+          />
+          <SelectableChip
+            label={t(LEVEL_KEYS.intermediario)}
+            selected={draft.level === 'intermediario'}
+            onPress={() => setLevel('intermediario')}
+          />
+          <SelectableChip
+            label={t(LEVEL_KEYS.avancado)}
+            selected={draft.level === 'avancado'}
+            onPress={() => setLevel('avancado')}
+          />
         </View>
 
-        <SectionTitle
-          title="Exercícios"
-          subtitle={draft.exercises.length ? `${draft.exercises.length} exercícios adicionados` : 'Nenhum exercício ainda'}
-        />
+        <SectionTitle title={t('workoutBuilder.exercisesSection')} subtitle={exercisesSubtitle} />
 
         {draft.exercises.map((exercise, index) => (
           <Card key={exercise.id} style={styles.exerciseCard}>
@@ -112,6 +156,7 @@ export default function WorkoutBuilderScreen() {
               <View style={styles.thumb}>
                 <ExerciseAnimation
                   kind={exercise.animation}
+                  exerciseId={exercise.id}
                   size={56}
                   highlightColor={getMuscleGroup(exercise.primaryMuscles[0]).color}
                 />
@@ -120,7 +165,9 @@ export default function WorkoutBuilderScreen() {
                 <Text style={styles.exerciseName} numberOfLines={1}>
                   {exercise.name}
                 </Text>
-                <Text style={styles.exerciseMuscle}>{exercise.muscleGroup}</Text>
+                <Text style={styles.exerciseMuscle}>
+                  {t(muscleGroupLabelKey(exercise.primaryMuscles[0]))}
+                </Text>
               </View>
               <View style={styles.reorderCol}>
                 <Pressable disabled={index === 0} onPress={() => moveExercise(exercise.id, 'up')}>
@@ -141,7 +188,7 @@ export default function WorkoutBuilderScreen() {
 
             <View style={styles.editRow}>
               <View style={styles.editField}>
-                <Text style={styles.editLabel}>Séries</Text>
+                <Text style={styles.editLabel}>{t('workoutBuilder.sets')}</Text>
                 <View style={styles.stepperRow}>
                   <Pressable
                     style={styles.stepperBtn}
@@ -160,18 +207,18 @@ export default function WorkoutBuilderScreen() {
               </View>
 
               <View style={[styles.editField, { flex: 1 }]}>
-                <Text style={styles.editLabel}>Repetições</Text>
+                <Text style={styles.editLabel}>{t('workoutBuilder.reps')}</Text>
                 <TextInput
                   style={styles.repsInput}
                   value={exercise.reps}
                   onChangeText={(text) => updateExercise(exercise.id, { reps: text })}
-                  placeholder="Ex.: 10-12"
+                  placeholder={t('workoutBuilder.repsPlaceholder')}
                   placeholderTextColor={colors.textMuted}
                 />
               </View>
 
               <View style={styles.editField}>
-                <Text style={styles.editLabel}>Descanso</Text>
+                <Text style={styles.editLabel}>{t('workoutBuilder.rest')}</Text>
                 <View style={styles.stepperRow}>
                   <Pressable
                     style={styles.stepperBtn}
@@ -194,7 +241,7 @@ export default function WorkoutBuilderScreen() {
 
         <View style={{ marginTop: spacing.sm }}>
           <PrimaryButton
-            label="Adicionar exercícios"
+            label={t('workoutBuilder.addExercises')}
             icon="add-circle-outline"
             variant="outline"
             onPress={() => navigation.navigate('ExercisePicker')}
@@ -202,12 +249,16 @@ export default function WorkoutBuilderScreen() {
         </View>
 
         <View style={{ marginTop: spacing.lg }}>
-          <PrimaryButton label={isEditing ? 'Salvar alterações' : 'Salvar treino'} icon="checkmark" onPress={handleSave} />
+          <PrimaryButton
+            label={isEditing ? t('workoutBuilder.saveEdit') : t('workoutBuilder.save')}
+            icon="checkmark"
+            onPress={handleSave}
+          />
         </View>
 
         {isEditing ? (
           <View style={{ marginTop: spacing.sm }}>
-            <PrimaryButton label="Excluir treino" icon="trash-outline" variant="danger" onPress={handleDelete} />
+            <PrimaryButton label={t('workoutBuilder.delete')} icon="trash-outline" variant="danger" onPress={handleDelete} />
           </View>
         ) : null}
       </ScrollView>

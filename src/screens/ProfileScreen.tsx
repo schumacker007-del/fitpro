@@ -1,82 +1,284 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, ImageBackground, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ProgressChart from '../components/ProgressChart';
+import BadgesSection from '../components/BadgesSection';
+import StreakCard from '../components/StreakCard';
 import { Card, Pill, PrimaryButton, SectionTitle } from '../components/ui';
+import LegalFooter from '../components/LegalFooter';
 import { useCustomPlan } from '../context/CustomPlanContext';
+import { useLanguage } from '../context/LanguageContext';
+import { useMedicalRecords } from '../context/MedicalRecordContext';
 import { useProgressPhotos } from '../context/ProgressPhotoContext';
 import { useTrainingLog } from '../context/TrainingLogContext';
 import { useUser } from '../context/UserContext';
+import { usePurchases } from '../context/PurchasesContext';
+import { useAppPreferences } from '../context/AppPreferencesContext';
+import { useBodyMeasurements } from '../context/BodyMeasurementsContext';
 import { RESPONSIBLE_PROFESSIONAL } from '../data/professional';
+import {
+  POWERLIFTING_ADVANCED_PROFILE_LOCKED,
+  POWERLIFTING_ADVANCED_PROFILE_UNLOCKED,
+} from '../data/powerlifting';
+import { useStoreProductPrices } from '../hooks/useStoreProductPrices';
+import { AppLocale, BCP47_LOCALE } from '../i18n/types';
+import { calculateNutritionTargets } from '../utils/nutritionTargets';
+import { formatInjurySummary } from '../utils/injurySelection';
+import { formatWeight, formatHeight } from '../utils/units';
+import { hasSeenFeaturePromo } from '../services/featurePromo';
 import { ProfileStackParamList } from '../navigation/types';
 import { colors, spacing } from '../theme';
 
+function formatExpiryDate(expiresAt: string, locale: AppLocale): string {
+  return new Intl.DateTimeFormat(BCP47_LOCALE[locale], { dateStyle: 'medium' }).format(new Date(expiresAt));
+}
+
 export default function ProfileScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<ProfileStackParamList, 'Profile'>>();
-  const { profile, planTier, bmi, downgradeToFree, resetProfile } = useUser();
+  const { t, locale } = useLanguage();
+  const { preferences } = useAppPreferences();
+  const { filledCount, totalCount } = useBodyMeasurements();
+  const { profile, planTier, isPowerliftingAdvancedActive, powerliftingAdvancedExpiresAt, bmi, resetProfile } =
+    useUser();
+  const { openManageSubscriptions: openSubscriptions } = usePurchases();
+  const { powerliftingPrice } = useStoreProductPrices();
   const { logs, getSuggestion } = useTrainingLog();
   const { latestRequest } = useCustomPlan();
   const { photos } = useProgressPhotos();
+  const { records } = useMedicalRecords();
   const photoCount = photos.length;
+  const medicalCount = records.length;
+
+  const openFeaturePromo = (variant: 'customPlan' | 'pro') => {
+    void (async () => {
+      const seen = await hasSeenFeaturePromo(variant);
+      if (seen) {
+        navigation.navigate(variant === 'pro' ? 'Paywall' : 'CustomPlan');
+        return;
+      }
+      navigation.navigate('FeaturePromo', { variant });
+    })();
+  };
 
   const recentExerciseIds = Array.from(new Set(logs.map((l) => l.exerciseId))).slice(0, 3);
+  const nutritionTargets = profile ? calculateNutritionTargets(profile) : null;
+  const injurySummary = formatInjurySummary(profile?.injuryAreas, t, t('profile.injuriesNone'));
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <SectionTitle title="Perfil" />
+    <View style={styles.safe}>
+      <ImageBackground
+        source={require('../../assets/profile/profile-bg.jpg')}
+        style={styles.background}
+        resizeMode="cover"
+      >
+        <LinearGradient
+          colors={['rgba(15,17,23,0.45)', 'rgba(15,17,23,0.85)', colors.background]}
+          locations={[0, 0.4, 1]}
+          style={styles.overlay}
+        />
+        <SafeAreaView style={styles.safeInner} edges={['top']}>
+          <ScrollView contentContainerStyle={styles.content}>
+        <View style={styles.profileHeaderRow}>
+          <View style={{ flex: 1 }}>
+            <SectionTitle title={t('profile.title')} />
+          </View>
+          <Pressable
+            onPress={() => navigation.navigate('Settings')}
+            style={styles.settingsGearBtn}
+            hitSlop={8}
+            accessibilityLabel={t('settings.title')}
+          >
+            <Ionicons name="settings-outline" size={22} color={colors.text} />
+          </Pressable>
+        </View>
 
         <Card style={styles.profileCard}>
           <View style={styles.avatar}>
             <Ionicons name="person" size={28} color={colors.background} />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={styles.name}>{profile?.name ?? 'Atleta'}</Text>
-            <Text style={styles.goal}>{goalLabel(profile?.goal)}</Text>
+            <Text style={styles.name}>{profile?.name ?? t('profile.athlete')}</Text>
+            <Text style={styles.goal}>{goalLabel(profile?.goal, t)}</Text>
           </View>
           <Pill label={planTier === 'pro' ? 'PRO' : 'FREE'} tone={planTier === 'pro' ? 'gold' : 'default'} />
         </Card>
 
         <View style={styles.statsRow}>
-          <StatBox label="Peso" value={profile ? `${profile.weightKg} kg` : '--'} />
-          <StatBox label="Altura" value={profile ? `${profile.heightCm} cm` : '--'} />
-          <StatBox label="Idade" value={profile ? `${profile.age} anos` : '--'} />
-          <StatBox label="IMC" value={bmi ? bmi.toFixed(1) : '--'} />
+          <StatBox
+            label={t('profile.weight')}
+            value={profile ? formatWeight(profile.weightKg, preferences.unitSystem) : '--'}
+          />
+          <StatBox
+            label={t('profile.height')}
+            value={profile ? formatHeight(profile.heightCm, preferences.unitSystem) : '--'}
+          />
+          <StatBox label={t('profile.age')} value={profile ? `${profile.age} ${t('common.years')}` : '--'} />
+          <StatBox label={t('profile.bmi')} value={bmi ? bmi.toFixed(1) : '--'} />
         </View>
 
-        <SectionTitle title="Assinatura" />
+        <Card style={styles.bodyMetricsCard}>
+          <Text style={styles.bodyMetricsHint}>{t('profile.bodyMetricsSubtitle')}</Text>
+          <PrimaryButton
+            label={t('profile.editBodyMetrics')}
+            icon="create-outline"
+            variant="outline"
+            onPress={() => navigation.navigate('BodyMetricsSettings')}
+          />
+        </Card>
+
+        <SectionTitle title={t('profile.injuriesTitle')} subtitle={t('profile.injuriesSubtitle')} />
+        <Card style={styles.injuryCard}>
+          <View style={styles.injuryRow}>
+            <View style={styles.settingsIcon}>
+              <Ionicons name="bandage-outline" size={20} color={colors.primary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.injuryValue}>{injurySummary}</Text>
+            </View>
+          </View>
+          <PrimaryButton
+            label={t('profile.editInjuries')}
+            icon="create-outline"
+            variant="outline"
+            onPress={() => navigation.navigate('InjurySettings')}
+          />
+        </Card>
+
+        {nutritionTargets ? (
+          <>
+            <SectionTitle title={t('profile.nutritionTitle')} subtitle={t('profile.nutritionSubtitle')} />
+            <Card style={styles.nutritionCard}>
+              <NutritionStat icon="water-outline" label={t('profile.nutrition.water')} value={`${nutritionTargets.waterLiters.toFixed(1)} L`} />
+              <NutritionStat icon="fish-outline" label={t('profile.nutrition.protein')} value={`${nutritionTargets.proteinG} g`} />
+              <NutritionStat icon="nutrition-outline" label={t('profile.nutrition.carbs')} value={`${nutritionTargets.carbsG} g`} />
+              <NutritionStat icon="ellipse-outline" label={t('profile.nutrition.fat')} value={`${nutritionTargets.fatG} g`} />
+              <Text style={styles.nutritionDisclaimer}>{t('profile.nutritionDisclaimer')}</Text>
+            </Card>
+          </>
+        ) : null}
+
+        <SectionTitle title={t('profile.offensiveTitle')} subtitle={t('profile.offensiveSubtitle')} />
+        <StreakCard />
+
+        <View style={{ marginTop: spacing.md }}>
+          <BadgesSection />
+        </View>
+
+        <SectionTitle title={t('profile.subscription')} />
         <Card>
           <Text style={styles.planTitle}>
-            Plano atual: <Text style={{ color: planTier === 'pro' ? colors.gold : colors.text }}>{planTier === 'pro' ? 'Pro' : 'Free'}</Text>
+            {t('profile.currentPlan')}{' '}
+            <Text style={{ color: planTier === 'pro' ? colors.gold : colors.text }}>
+              {planTier === 'pro' ? t('profile.planPro') : t('profile.planFree')}
+            </Text>
           </Text>
           <Text style={styles.planDesc}>
-            {planTier === 'pro'
-              ? 'Você tem acesso completo a treinos, dietas detalhadas e novidades do app.'
-              : 'Você está no plano gratuito, com acesso a treinos básicos e dieta geral.'}
+            {planTier === 'pro' ? t('profile.proDesc') : t('profile.freeDesc')}
+            {planTier === 'pro' ? `\n${t('iap.manageSubscriptionHint')}` : ''}
           </Text>
           <View style={{ marginTop: spacing.md, gap: spacing.sm }}>
             {planTier === 'free' ? (
-              <PrimaryButton label="Assinar FitPro Pro" icon="star" variant="gold" onPress={() => navigation.navigate('Paywall')} />
+              <PrimaryButton label={t('profile.subscribePro')} icon="star" variant="gold" onPress={() => openFeaturePromo('pro')} />
             ) : (
               <PrimaryButton
-                label="Gerenciar assinatura"
+                label={t('profile.manageSubscription')}
                 icon="settings-outline"
                 variant="outline"
-                onPress={() =>
-                  Alert.alert('Assinatura Pro', 'Deseja cancelar e voltar para o plano gratuito?', [
-                    { text: 'Manter Pro', style: 'cancel' },
-                    { text: 'Cancelar Pro', style: 'destructive', onPress: downgradeToFree },
-                  ])
-                }
+                onPress={openSubscriptions}
               />
             )}
           </View>
         </Card>
 
-        <SectionTitle title="Meu progresso" subtitle="Esforço percebido (RPE) registrado no Modo Treino Ativo" />
+        <SectionTitle title={t('powerlifting.advanced.sectionTitle')} subtitle={t('powerlifting.advanced.sectionSubtitle')} />
+        <Card>
+          <View style={styles.addonRow}>
+            <Ionicons name="trophy-outline" size={22} color="#EF4444" />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.addonTitle}>{t('powerlifting.advanced.title')}</Text>
+              <Text style={styles.addonDesc}>
+                {isPowerliftingAdvancedActive
+                  ? `${POWERLIFTING_ADVANCED_PROFILE_UNLOCKED} · ${t('powerlifting.advanced.expiresOn', {
+                      date: formatExpiryDate(powerliftingAdvancedExpiresAt!, locale),
+                    })}`
+                  : powerliftingAdvancedExpiresAt
+                    ? t('powerlifting.advanced.expiredOn', {
+                        date: formatExpiryDate(powerliftingAdvancedExpiresAt, locale),
+                      })
+                    : `${POWERLIFTING_ADVANCED_PROFILE_LOCKED} · ${powerliftingPrice}`}
+              </Text>
+            </View>
+            <Pill
+              label={
+                isPowerliftingAdvancedActive
+                  ? t('powerlifting.advanced.statusActive')
+                  : powerliftingAdvancedExpiresAt
+                    ? t('powerlifting.advanced.statusExpired')
+                    : t('powerlifting.advanced.statusLocked')
+              }
+              tone={isPowerliftingAdvancedActive ? 'primary' : 'gold'}
+            />
+          </View>
+          {!isPowerliftingAdvancedActive ? (
+            <View style={{ marginTop: spacing.md }}>
+              <PrimaryButton
+                label={
+                  powerliftingAdvancedExpiresAt
+                    ? t('powerlifting.advanced.renew')
+                    : t('powerlifting.advanced.accessProgram')
+                }
+                icon="lock-open"
+                variant="gold"
+                onPress={() =>
+                  (navigation.getParent() as any)?.navigate('Treinos', { screen: 'PowerliftingAdvancedPaywall' })
+                }
+              />
+            </View>
+          ) : null}
+        </Card>
+
+        <SectionTitle title={t('profile.progress')} subtitle={t('profile.progressSubtitle')} />
+        <Card style={styles.settingsCard}>
+          <Pressable style={styles.settingsRow} onPress={() => navigation.navigate('Settings')}>
+            <View style={styles.settingsIcon}>
+              <Ionicons name="settings-outline" size={20} color={colors.primary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.settingsTitle}>{t('settings.title')}</Text>
+              <Text style={styles.settingsHint}>{t('settings.section.preferences')}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+          </Pressable>
+          <View style={styles.settingsDivider} />
+          <Pressable style={styles.settingsRow} onPress={() => navigation.navigate('Statistics')}>
+            <View style={styles.settingsIcon}>
+              <Ionicons name="stats-chart-outline" size={20} color={colors.primary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.settingsTitle}>{t('profile.statistics')}</Text>
+              <Text style={styles.settingsHint}>{t('profile.statisticsSubtitle')}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+          </Pressable>
+          <View style={styles.settingsDivider} />
+          <Pressable style={styles.settingsRow} onPress={() => navigation.navigate('BodyMeasurements')}>
+            <View style={styles.settingsIcon}>
+              <Ionicons name="resize-outline" size={20} color={colors.primary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.settingsTitle}>{t('more.menu.measurements')}</Text>
+              <Text style={styles.settingsHint}>
+                {filledCount}/{totalCount} {t('profile.measurementsFilled')}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+          </Pressable>
+        </Card>
+
         {planTier === 'pro' ? (
           <Card>
             <ProgressChart logs={logs} />
@@ -96,7 +298,7 @@ export default function ProfileScreen() {
                       />
                       <Text style={styles.suggestionRowText}>
                         <Text style={{ fontWeight: '800' }}>{log.exerciseName}: </Text>
-                        {isIncrease ? 'considere aumentar a carga.' : 'considere descansar mais.'}
+                        {isIncrease ? t('profile.suggestionIncrease') : t('profile.suggestionRest')}
                       </Text>
                     </View>
                   );
@@ -107,61 +309,82 @@ export default function ProfileScreen() {
         ) : (
           <Card style={styles.teaserCard}>
             <Ionicons name="lock-closed" size={20} color={colors.gold} />
-            <Text style={styles.teaserTitle}>Acompanhamento de esforço e progressão no Pro</Text>
-            <Text style={styles.teaserSubtitle}>
-              Registre o RPE dos seus treinos no Modo Treino Ativo e receba sugestões automáticas de carga.
-            </Text>
-            <PrimaryButton label="Ver plano Pro" icon="star" variant="gold" onPress={() => navigation.navigate('Paywall')} />
+            <Text style={styles.teaserTitle}>{t('profile.progressTeaserTitle')}</Text>
+            <Text style={styles.teaserSubtitle}>{t('profile.progressTeaserSubtitle')}</Text>
+            <PrimaryButton label={t('common.viewProPlan')} icon="star" variant="gold" onPress={() => openFeaturePromo('pro')} />
           </Card>
         )}
 
-        <SectionTitle title="Treino sob medida" subtitle="Ficha semanal ou mensal montada à mão pelo seu professor" />
+        <SectionTitle title={t('profile.customPlan')} subtitle={t('profile.customPlanSubtitle')} />
         {planTier === 'pro' ? (
           <Card>
             {latestRequest ? (
               <View style={styles.customPlanStatusRow}>
                 <Ionicons name="time-outline" size={16} color={statusColor(latestRequest.status)} />
                 <Text style={[styles.customPlanStatusText, { color: statusColor(latestRequest.status) }]}>
-                  {statusLabel(latestRequest.status)}
+                  {statusLabel(latestRequest.status, t)}
                 </Text>
               </View>
             ) : (
               <Text style={styles.planDesc}>
-                Conte seus dias disponíveis, objetivo e restrições — {RESPONSIBLE_PROFESSIONAL.name.replace('Prof. ', '')}{' '}
-                monta sua ficha e te envia de volta.
+                {t('profile.customPlanIntro', {
+                  coach: RESPONSIBLE_PROFESSIONAL.name.replace('Prof. ', ''),
+                })}
               </Text>
             )}
             <View style={{ marginTop: spacing.md }}>
               <PrimaryButton
-                label={latestRequest ? 'Solicitar nova ficha' : 'Solicitar treino personalizado'}
+                label={latestRequest ? t('profile.customPlanRequestNew') : t('profile.customPlanRequest')}
                 icon="paper-plane"
                 variant="outline"
-                onPress={() => navigation.navigate('CustomPlan')}
+                onPress={() => openFeaturePromo('customPlan')}
               />
             </View>
           </Card>
         ) : (
           <Card style={styles.teaserCard}>
             <Ionicons name="lock-closed" size={20} color={colors.gold} />
-            <Text style={styles.teaserTitle}>Treino sob medida no Pro</Text>
-            <Text style={styles.teaserSubtitle}>
-              Peça uma ficha semanal ou mensal montada manualmente pelo seu professor, em vez de um treino genérico.
-            </Text>
-            <PrimaryButton label="Ver plano Pro" icon="star" variant="gold" onPress={() => navigation.navigate('Paywall')} />
+            <Text style={styles.teaserTitle}>{t('profile.customPlanTeaserTitle')}</Text>
+            <Text style={styles.teaserSubtitle}>{t('profile.customPlanTeaserSubtitle')}</Text>
+            <PrimaryButton label={t('common.viewProPlan')} icon="star" variant="gold" onPress={() => openFeaturePromo('pro')} />
           </Card>
         )}
 
-        <SectionTitle title="Fotos de evolução" subtitle="Registre fotos periódicas e compare sua transformação" />
+        <SectionTitle title={t('profile.healthDocs')} subtitle={t('profile.healthDocsSubtitle')} />
         {planTier === 'pro' ? (
           <Card>
             <Text style={styles.planDesc}>
-              {photoCount > 0
-                ? `${photoCount} foto(s) registrada(s). Compare lado a lado ou envie para seu professor.`
-                : 'Tire uma foto agora para começar a acompanhar sua evolução física.'}
+              {medicalCount > 0
+                ? t('common.savedCount', { count: medicalCount })
+                : t('profile.healthDocsEmpty')}
             </Text>
             <View style={{ marginTop: spacing.md }}>
               <PrimaryButton
-                label={photoCount > 0 ? 'Ver minhas fotos' : 'Registrar primeira foto'}
+                label={medicalCount > 0 ? t('profile.healthDocsOpen') : t('profile.healthDocsAddFirst')}
+                icon="document-text-outline"
+                variant="outline"
+                onPress={() => navigation.navigate('MedicalRecords')}
+              />
+            </View>
+          </Card>
+        ) : (
+          <Card style={styles.teaserCard}>
+            <Ionicons name="lock-closed" size={20} color={colors.gold} />
+            <Text style={styles.teaserTitle}>{t('profile.healthDocsTeaserTitle')}</Text>
+            <Text style={styles.teaserSubtitle}>{t('profile.healthDocsTeaserSubtitle')}</Text>
+            <PrimaryButton label={t('common.viewProPlan')} icon="star" variant="gold" onPress={() => openFeaturePromo('pro')} />
+          </Card>
+        )}
+
+        <SectionTitle title={t('profile.evolutionPhotos')} subtitle={t('profile.evolutionPhotosSubtitle')} />
+        {planTier === 'pro' ? (
+          <Card>
+            <Text style={styles.planDesc}>
+              {photoCount > 0 ? t('common.photosCount', { count: photoCount }) : t('profile.photosEmpty')}
+            </Text>
+            <View style={{ marginTop: spacing.md }}>
+              <PrimaryButton
+                label={photoCount > 0 ? t('profile.photosView') : t('profile.photosAddFirst')}
                 icon="camera-outline"
                 variant="outline"
                 onPress={() => navigation.navigate('ProgressPhotos')}
@@ -171,15 +394,35 @@ export default function ProfileScreen() {
         ) : (
           <Card style={styles.teaserCard}>
             <Ionicons name="lock-closed" size={20} color={colors.gold} />
-            <Text style={styles.teaserTitle}>Fotos de evolução no Pro</Text>
-            <Text style={styles.teaserSubtitle}>
-              Registre fotos periódicas, compare antes/depois e envie diretamente para seu professor.
-            </Text>
-            <PrimaryButton label="Ver plano Pro" icon="star" variant="gold" onPress={() => navigation.navigate('Paywall')} />
+            <Text style={styles.teaserTitle}>{t('profile.photosTeaserTitle')}</Text>
+            <Text style={styles.teaserSubtitle}>{t('profile.photosTeaserSubtitle')}</Text>
+            <PrimaryButton label={t('common.viewProPlan')} icon="star" variant="gold" onPress={() => openFeaturePromo('pro')} />
           </Card>
         )}
 
-        <SectionTitle title="Responsável técnico" />
+        <SectionTitle title={t('profile.pdfReport')} subtitle={t('profile.pdfReportSubtitle')} />
+        {planTier === 'pro' ? (
+          <Card>
+            <Text style={styles.planDesc}>{t('profile.pdfDescription')}</Text>
+            <View style={{ marginTop: spacing.md }}>
+              <PrimaryButton
+                label={t('profile.pdfGenerate')}
+                icon="document-attach-outline"
+                variant="outline"
+                onPress={() => navigation.navigate('ProgressReport')}
+              />
+            </View>
+          </Card>
+        ) : (
+          <Card style={styles.teaserCard}>
+            <Ionicons name="lock-closed" size={20} color={colors.gold} />
+            <Text style={styles.teaserTitle}>{t('profile.pdfTeaserTitle')}</Text>
+            <Text style={styles.teaserSubtitle}>{t('profile.pdfTeaserSubtitle')}</Text>
+            <PrimaryButton label={t('common.viewProPlan')} icon="star" variant="gold" onPress={() => openFeaturePromo('pro')} />
+          </Card>
+        )}
+
+        <SectionTitle title={t('profile.professional')} />
         <Card>
           <View style={styles.proRow}>
             <View style={styles.proAvatar}>
@@ -197,19 +440,39 @@ export default function ProfileScreen() {
 
         <View style={{ marginTop: spacing.lg }}>
           <PrimaryButton
-            label="Editar / refazer perfil"
+            label={t('profile.editProfile')}
             icon="create-outline"
             variant="outline"
             onPress={() =>
-              Alert.alert('Refazer perfil', 'Isso vai limpar seus dados salvos e abrir o cadastro novamente.', [
-                { text: 'Cancelar', style: 'cancel' },
-                { text: 'Refazer', style: 'destructive', onPress: resetProfile },
+              Alert.alert(t('profile.resetTitle'), t('profile.resetMessage'), [
+                { text: t('common.cancel'), style: 'cancel' },
+                { text: t('profile.resetConfirm'), style: 'destructive', onPress: resetProfile },
               ])
             }
           />
         </View>
-      </ScrollView>
-    </SafeAreaView>
+          </ScrollView>
+        </SafeAreaView>
+      </ImageBackground>
+    </View>
+  );
+}
+
+function NutritionStat({
+  icon,
+  label,
+  value,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  value: string;
+}) {
+  return (
+    <View style={styles.nutritionRow}>
+      <Ionicons name={icon} size={20} color={colors.primary} />
+      <Text style={styles.nutritionLabel}>{label}</Text>
+      <Text style={styles.nutritionValue}>{value}</Text>
+    </View>
   );
 }
 
@@ -222,10 +485,10 @@ function StatBox({ label, value }: { label: string; value: string }) {
   );
 }
 
-function statusLabel(status: string) {
-  if (status === 'pendente') return 'Aguardando seu professor montar o treino';
-  if (status === 'em_producao') return 'Seu professor está montando seu treino';
-  return 'Treino entregue pelo professor';
+function statusLabel(status: string, t: (key: import('../i18n/translations').TranslationKey) => string) {
+  if (status === 'pendente') return t('profile.customPlanStatus.pending');
+  if (status === 'em_producao') return t('profile.customPlanStatus.inProgress');
+  return t('profile.customPlanStatus.delivered');
 }
 
 function statusColor(status: string) {
@@ -234,15 +497,19 @@ function statusColor(status: string) {
   return colors.textMuted;
 }
 
-function goalLabel(goal?: string) {
-  if (goal === 'perder_peso') return 'Objetivo: perder peso';
-  if (goal === 'ganhar_massa') return 'Objetivo: ganhar massa';
-  if (goal === 'manter_forma') return 'Objetivo: manter a forma';
-  return 'Objetivo não definido';
+function goalLabel(goal: string | undefined, t: (key: import('../i18n/translations').TranslationKey) => string) {
+  if (goal === 'perder_peso') return t('goal.loseWeight');
+  if (goal === 'ganhar_massa') return t('goal.gainMass');
+  if (goal === 'condicionamento_fisico') return t('goal.conditioning');
+  if (goal === 'manter_forma') return t('goal.maintain');
+  return t('goal.undefined');
 }
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
+  background: { flex: 1 },
+  overlay: { ...StyleSheet.absoluteFillObject },
+  safeInner: { flex: 1 },
   content: { padding: spacing.lg, paddingBottom: spacing.xl },
   profileCard: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginBottom: spacing.md },
   avatar: {
@@ -257,10 +524,18 @@ const styles = StyleSheet.create({
   goal: { color: colors.textMuted, fontSize: 13, marginTop: 2 },
   statsRow: { flexDirection: 'row', gap: 8, marginBottom: spacing.md },
   statBox: { flex: 1, alignItems: 'center', paddingVertical: spacing.sm },
+  nutritionCard: { gap: spacing.sm },
+  nutritionRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  nutritionLabel: { flex: 1, color: colors.text, fontSize: 14, fontWeight: '600' },
+  nutritionValue: { color: colors.primary, fontWeight: '800', fontSize: 15 },
+  nutritionDisclaimer: { color: colors.textMuted, fontSize: 11, lineHeight: 16, marginTop: spacing.xs },
   statValue: { color: colors.text, fontWeight: '800', fontSize: 15 },
   statLabel: { color: colors.textMuted, fontSize: 10, marginTop: 2 },
   planTitle: { color: colors.text, fontWeight: '800', fontSize: 15, marginBottom: 6 },
   planDesc: { color: colors.textMuted, fontSize: 13, lineHeight: 19 },
+  addonRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  addonTitle: { color: colors.text, fontWeight: '800', fontSize: 14 },
+  addonDesc: { color: colors.textMuted, fontSize: 12, marginTop: 2, lineHeight: 17 },
   customPlanStatusRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   customPlanStatusText: { fontWeight: '700', fontSize: 13, flex: 1 },
   proRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.sm },
@@ -282,4 +557,47 @@ const styles = StyleSheet.create({
   teaserCard: { alignItems: 'center', gap: 6 },
   teaserTitle: { color: colors.text, fontWeight: '800', fontSize: 14, textAlign: 'center', marginTop: 4 },
   teaserSubtitle: { color: colors.textMuted, fontSize: 12, textAlign: 'center', marginBottom: spacing.sm },
+  injuryCard: { gap: spacing.md },
+  bodyMetricsCard: { marginBottom: spacing.md, gap: spacing.md },
+  bodyMetricsHint: { color: colors.textMuted, fontSize: 12, lineHeight: 18 },
+  injuryRow: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md },
+  injuryValue: { color: colors.text, fontSize: 14, fontWeight: '600', lineHeight: 20 },
+  profileHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.sm,
+  },
+  settingsGearBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginTop: spacing.xs,
+  },
+  settingsCard: { padding: 0, overflow: 'hidden' },
+  settingsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    padding: spacing.md,
+  },
+  settingsDivider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: colors.border,
+    marginLeft: spacing.md + 40 + spacing.md,
+  },
+  settingsIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.surfaceAlt,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  settingsTitle: { color: colors.text, fontWeight: '800', fontSize: 14 },
+  settingsHint: { color: colors.textMuted, fontSize: 12, marginTop: 2 },
 });

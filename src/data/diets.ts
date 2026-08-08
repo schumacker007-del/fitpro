@@ -113,5 +113,6 @@ export const DIETS: DietPlan[] = [
 ];
 
 export function getDietForGoal(goal: string, tier: 'free' | 'pro') {
-  return DIETS.find((d) => d.goal === goal && d.tier === tier);
+  const resolvedGoal = goal === 'condicionamento_fisico' ? 'manter_forma' : goal;
+  return DIETS.find((d) => d.goal === resolvedGoal && d.tier === tier);
 }

@@ -48,7 +48,7 @@ export function PrimaryButton({
 export function SectionTitle({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
     <View style={{ marginBottom: spacing.sm }}>
-      <Text style={[typography.h2, { color: colors.text }]}>{title}</Text>
+      <Text style={[typography.h2, { color: colors.primary }]}>{title}</Text>
       {subtitle ? <Text style={[typography.body, { color: colors.textMuted, marginTop: 2 }]}>{subtitle}</Text> : null}
     </View>
   );
@@ -64,7 +64,7 @@ export function ProBadge() {
 }
 
 export function Pill({ label, tone = 'default' }: { label: string; tone?: 'default' | 'primary' | 'gold' }) {
-  const bg = tone === 'primary' ? 'rgba(52,211,153,0.15)' : tone === 'gold' ? 'rgba(244,183,64,0.15)' : colors.surfaceAlt;
+  const bg = tone === 'primary' ? colors.primaryMuted : tone === 'gold' ? 'rgba(244,183,64,0.15)' : colors.surfaceAlt;
   const color = tone === 'primary' ? colors.primary : tone === 'gold' ? colors.gold : colors.textMuted;
   return (
     <View style={[styles.pill, { backgroundColor: bg }]}>
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceAlt,
   },
   chipSelected: {
-    backgroundColor: 'rgba(52,211,153,0.15)',
+    backgroundColor: colors.primaryMuted,
     borderColor: colors.primary,
   },
   chipText: {

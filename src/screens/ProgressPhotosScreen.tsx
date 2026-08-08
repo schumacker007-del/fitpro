@@ -20,13 +20,16 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card, PrimaryButton, SectionTitle } from '../components/ui';
 import { useProgressPhotos } from '../context/ProgressPhotoContext';
+import { useLanguage } from '../context/LanguageContext';
 import { ProfileStackParamList } from '../navigation/types';
 import { colors, radius, spacing, typography } from '../theme';
+import { formatLocaleDate } from '../utils/formatLocaleDate';
 import { ProgressPhoto } from '../types';
 
 export default function ProgressPhotosScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<ProfileStackParamList, 'ProgressPhotos'>>();
   const { photos, addPhoto, deletePhoto } = useProgressPhotos();
+  const { locale, t } = useLanguage();
 
   const [pendingUri, setPendingUri] = useState<string | null>(null);
   const [weight, setWeight] = useState('');
@@ -41,7 +44,7 @@ export default function ProgressPhotosScreen() {
     if (source === 'camera') {
       const perm = await ImagePicker.requestCameraPermissionsAsync();
       if (!perm.granted) {
-        Alert.alert('Permissão necessária', 'Autorize o acesso à câmera para tirar sua foto de evolução.');
+        Alert.alert(t('common.permissionTitle'), t('common.permissionCamera'));
         return;
       }
       const result = await ImagePicker.launchCameraAsync({ quality: 0.7, allowsEditing: true, aspect: [3, 4] });
@@ -49,7 +52,7 @@ export default function ProgressPhotosScreen() {
     } else {
       const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!perm.granted) {
-        Alert.alert('Permissão necessária', 'Autorize o acesso às fotos para anexar sua foto de evolução.');
+        Alert.alert(t('common.permissionTitle'), t('common.permissionGallery'));
         return;
       }
       const result = await ImagePicker.launchImageLibraryAsync({ quality: 0.7, allowsEditing: true, aspect: [3, 4] });
@@ -67,10 +70,10 @@ export default function ProgressPhotosScreen() {
         }
       );
     } else {
-      Alert.alert('Adicionar foto', undefined, [
-        { text: 'Tirar foto', onPress: () => pickImage('camera') },
-        { text: 'Escolher da galeria', onPress: () => pickImage('library') },
-        { text: 'Cancelar', style: 'cancel' },
+      Alert.alert(t('progressPhotos.addPhoto'), undefined, [
+        { text: t('progressPhotos.takePhoto'), onPress: () => pickImage('camera') },
+        { text: t('progressPhotos.chooseGallery'), onPress: () => pickImage('library') },
+        { text: t('common.cancel'), style: 'cancel' },
       ]);
     }
   };
@@ -88,7 +91,7 @@ export default function ProgressPhotosScreen() {
       setWeight('');
       setNote('');
     } catch (e) {
-      Alert.alert('Não foi possível salvar', 'Tente novamente em instantes.');
+      Alert.alert(t('common.saveFailed'));
     } finally {
       setSaving(false);
     }
@@ -97,7 +100,7 @@ export default function ProgressPhotosScreen() {
   const handleShare = async (photo: ProgressPhoto) => {
     const available = await Sharing.isAvailableAsync();
     if (!available) {
-      Alert.alert('Compartilhamento indisponível', 'Seu dispositivo não suporta compartilhamento de arquivos.');
+      Alert.alert(t('common.shareUnavailable'));
       return;
     }
     await Sharing.shareAsync(photo.uri, {
@@ -106,9 +109,9 @@ export default function ProgressPhotosScreen() {
   };
 
   const handleDelete = (photo: ProgressPhoto) => {
-    Alert.alert('Remover foto', 'Essa foto de evolução será apagada permanentemente. Deseja continuar?', [
-      { text: 'Cancelar', style: 'cancel' },
-      { text: 'Remover', style: 'destructive', onPress: () => deletePhoto(photo.id) },
+    Alert.alert(t('progressPhotos.deleteTitle'), t('progressPhotos.deleteBody'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('common.delete'), style: 'destructive', onPress: () => deletePhoto(photo.id) },
     ]);
   };
 
@@ -215,7 +218,7 @@ export default function ProgressPhotosScreen() {
                 <Card style={[styles.photoCard, isSelected ? styles.photoCardSelected : null]}>
                   <Image source={{ uri: photo.uri }} style={styles.photoThumb} />
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.photoDate}>{formatDate(photo.dateISO)}</Text>
+                    <Text style={styles.photoDate}>{formatLocaleDate(locale, photo.dateISO, { day: '2-digit', month: 'short', year: 'numeric' })}</Text>
                     {photo.weightKg ? <Text style={styles.photoMeta}>{photo.weightKg} kg</Text> : null}
                     {photo.note ? <Text style={styles.photoNote}>{photo.note}</Text> : null}
                     {!compareMode ? (
@@ -261,7 +264,7 @@ export default function ProgressPhotosScreen() {
                 photo ? (
                   <View key={photo.id} style={styles.compareCol}>
                     <Image source={{ uri: photo.uri }} style={styles.compareImage} />
-                    <Text style={styles.compareDate}>{formatDate(photo.dateISO)}</Text>
+                    <Text style={styles.compareDate}>{formatLocaleDate(locale, photo.dateISO, { day: '2-digit', month: 'short', year: 'numeric' })}</Text>
                     {photo.weightKg ? <Text style={styles.photoMeta}>{photo.weightKg} kg</Text> : null}
                   </View>
                 ) : (
@@ -276,9 +279,6 @@ export default function ProgressPhotosScreen() {
   );
 }
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
-}
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },

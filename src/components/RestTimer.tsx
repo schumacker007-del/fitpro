@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import React, { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, Vibration, View } from 'react-native';
+import { useLanguage } from '../context/LanguageContext';
 import { colors, radius, spacing } from '../theme';
 
 interface Props {
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export default function RestTimer({ seconds, onComplete, onSkip }: Props) {
+  const { t } = useLanguage();
   const [remaining, setRemaining] = useState(seconds);
   const completedRef = useRef(false);
 
@@ -42,7 +44,7 @@ export default function RestTimer({ seconds, onComplete, onSkip }: Props) {
 
   return (
     <View style={styles.wrap}>
-      <Text style={styles.label}>DESCANSO</Text>
+      <Text style={styles.label}>{t('workout.rest.label')}</Text>
       <View style={styles.ring}>
         <Text style={styles.time}>
           {mm}:{ss}
@@ -59,7 +61,7 @@ export default function RestTimer({ seconds, onComplete, onSkip }: Props) {
         }}
       >
         <Ionicons name="play-skip-forward" size={16} color={colors.text} />
-        <Text style={styles.skipText}>Pular descanso</Text>
+        <Text style={styles.skipText}>{t('workout.rest.skip')}</Text>
       </Pressable>
     </View>
   );

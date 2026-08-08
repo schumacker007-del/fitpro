@@ -38,18 +38,20 @@ para rodar no seu iPhone via Expo Go (e futuramente publicar na App Store).
 
 ## Como rodar no seu iPhone
 
+Este app é **somente para celular** (iOS/Android). **Não use navegador** — o FitPro não funciona na web.
+
 1. Instale o app **Expo Go** na App Store do seu iPhone.
 2. No computador, dentro da pasta do projeto:
    ```bash
    npm install
-   npx expo start
+   npm start
    ```
-3. Um QR code e uma URL `exp://...` vão aparecer no terminal.
-4. Certifique-se de que o iPhone está **na mesma rede Wi-Fi** do computador.
-5. Abra a câmera do iPhone (ou o app Expo Go) e escaneie o QR code — o app abre direto no seu iPhone.
+3. No terminal aparece um **QR code** — escaneie com a câmera do iPhone ou com o Expo Go.
+4. O app abre **dentro do Expo Go** no celular.
 
-Também funciona no simulador iOS (`npm run ios`, requer Xcode instalado) ou no navegador (`npm run web`,
-requer `npx expo install react-dom react-native-web`).
+**Não clique** em links `http://localhost:...` no navegador e **ignore** a linha `w │ open web` no terminal (ela fica desativada de propósito).
+
+Também funciona no simulador iOS (`npm run ios`, requer Xcode instalado).
 
 ## Estrutura do projeto
 

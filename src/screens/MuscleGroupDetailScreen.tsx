@@ -6,19 +6,30 @@ import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BodyMap from '../components/BodyMap';
 import ExerciseAnimation from '../components/ExerciseAnimation';
+import InjuryCautionBanner from '../components/InjuryCautionBanner';
 import { Card, ProBadge } from '../components/ui';
+import { useLanguage } from '../context/LanguageContext';
 import { getMuscleGroup } from '../data/muscleGroups';
+import { TranslationKey } from '../i18n/translations';
 import { getExercisesForMuscleGroup } from '../data/workouts';
 import { useUser } from '../context/UserContext';
 import { WorkoutsStackParamList } from '../navigation/types';
 import { colors, spacing, typography } from '../theme';
+import { getMatchingInjuriesForExercise } from '../utils/injuryCaution';
 
 export default function MuscleGroupDetailScreen() {
   const route = useRoute<RouteProp<WorkoutsStackParamList, 'MuscleGroupDetail'>>();
   const navigation = useNavigation<NativeStackNavigationProp<WorkoutsStackParamList, 'MuscleGroupDetail'>>();
-  const { planTier } = useUser();
+  const { planTier, profile } = useUser();
+  const { t } = useLanguage();
   const info = getMuscleGroup(route.params.muscleGroupId);
+  const muscleTitleKey = `workouts.muscle.${route.params.muscleGroupId}` as TranslationKey;
+  const muscleTitle = t(muscleTitleKey);
   const exercises = getExercisesForMuscleGroup(route.params.muscleGroupId);
+  const bodyMapHighlight =
+    route.params.muscleGroupId === 'gluteos' || route.params.muscleGroupId === 'isquiotibiais'
+      ? (['posterior_gluteos'] as const)
+      : [info.id];
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -26,7 +37,7 @@ export default function MuscleGroupDetailScreen() {
         <Pressable onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="chevron-back" size={22} color={colors.text} />
         </Pressable>
-        <Text style={[typography.h3, { color: colors.text }]}>{info.label}</Text>
+        <Text style={[typography.h3, { color: colors.text }]}>{muscleTitle}</Text>
         <View style={{ width: 22 }} />
       </View>
 
@@ -36,11 +47,12 @@ export default function MuscleGroupDetailScreen() {
         contentContainerStyle={styles.list}
         ListHeaderComponent={
           <View style={styles.heroWrap}>
-            <BodyMap highlighted={[info.id]} size={110} />
+            <BodyMap highlighted={[...bodyMapHighlight]} size={110} />
           </View>
         }
-        renderItem={({ item, index }) => {
+        renderItem={({ item }) => {
           const locked = item.tier === 'pro' && planTier === 'free';
+          const injuryMatches = getMatchingInjuriesForExercise(item, profile?.injuryAreas);
           return (
             <Pressable
               onPress={() =>
@@ -51,7 +63,7 @@ export default function MuscleGroupDetailScreen() {
             >
               <Card style={styles.exerciseCard}>
                 <View style={styles.thumb}>
-                  <ExerciseAnimation kind={item.animation} size={64} highlightColor={info.color} />
+                  <ExerciseAnimation kind={item.animation} exerciseId={item.id} size={64} highlightColor={info.color} />
                 </View>
                 <View style={{ flex: 1 }}>
                   <View style={styles.titleRow}>
@@ -63,6 +75,9 @@ export default function MuscleGroupDetailScreen() {
                   <Text style={styles.workoutRef} numberOfLines={1}>
                     {item.workoutTitle}
                   </Text>
+                  {injuryMatches.length > 0 ? (
+                    <InjuryCautionBanner injuries={injuryMatches} compact />
+                  ) : null}
                 </View>
                 <View style={styles.repsBadge}>
                   <Text style={styles.repsBadgeText}>
@@ -80,7 +95,7 @@ export default function MuscleGroupDetailScreen() {
         }}
         ItemSeparatorComponent={() => <View style={{ height: spacing.sm }} />}
         ListEmptyComponent={
-          <Text style={styles.empty}>Nenhum exercício cadastrado ainda pra esse grupo.</Text>
+          <Text style={styles.empty}>{t('muscleGroup.empty')}</Text>
         }
       />
     </SafeAreaView>

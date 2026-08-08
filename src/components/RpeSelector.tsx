@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useLanguage } from '../context/LanguageContext';
 import { colors, radius, spacing } from '../theme';
 import { RpeScore } from '../types';
 
@@ -16,6 +17,7 @@ export default function RpeSelector({
   value?: RpeScore | null;
   onSelect: (rpe: RpeScore) => void;
 }) {
+  const { t } = useLanguage();
   return (
     <View>
       <View style={styles.grid}>
@@ -38,8 +40,8 @@ export default function RpeSelector({
         })}
       </View>
       <View style={styles.legendRow}>
-        <Text style={styles.legendText}>1 · Muito fácil</Text>
-        <Text style={styles.legendText}>10 · Esforço máximo</Text>
+        <Text style={styles.legendText}>{t('rpe.legendEasy')}</Text>
+        <Text style={styles.legendText}>{t('rpe.legendMax')}</Text>
       </View>
     </View>
   );

@@ -1,0 +1,14 @@
+# Source / editor material — not bundled in the app (Metro only packs require() targets).
+assets/videos/source/
+assets/videos/chest/clips/
+assets/videos/chest/anim/
+assets/videos/chest/anim-thumbs/
+assets/videos/chest/thumbs/
+assets/videos/chest/manifest.json
+assets/videos/chest/anim-manifest.json
+
+# Dev screenshots
+assets/expo-qr*.png
+
+# Optional: keep originals outside repo after optimize-poses.sh
+# assets/poses-original/

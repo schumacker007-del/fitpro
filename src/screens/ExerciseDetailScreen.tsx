@@ -2,35 +2,54 @@ import { Ionicons } from '@expo/vector-icons';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React from 'react';
-import { ScrollView, StyleSheet, Text, View, Pressable } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ExerciseAnimation from '../components/ExerciseAnimation';
+import InjuryCautionBanner from '../components/InjuryCautionBanner';
 import MuscleZoomCard from '../components/MuscleZoomCard';
 import { Card, Pill, PrimaryButton } from '../components/ui';
 import { useCustomWorkouts } from '../context/CustomWorkoutContext';
+import { useLanguage } from '../context/LanguageContext';
 import { useTrainingLog } from '../context/TrainingLogContext';
 import { useUser } from '../context/UserContext';
+import { muscleGroupLabelKey } from '../i18n/muscleGroupLabel';
 import { getMuscleGroup } from '../data/muscleGroups';
 import { WORKOUTS } from '../data/workouts';
+import { PreventScreenCapture, shouldPreventScreenCapture } from '../hooks/usePreventScreenCapture';
 import { WorkoutsStackParamList } from '../navigation/types';
 import { colors, spacing, typography } from '../theme';
+import { getMatchingInjuriesForExercise } from '../utils/injuryCaution';
 
 export default function ExerciseDetailScreen() {
   const route = useRoute<RouteProp<WorkoutsStackParamList, 'ExerciseDetail'>>();
   const navigation = useNavigation<NativeStackNavigationProp<WorkoutsStackParamList, 'ExerciseDetail'>>();
-  const { planTier } = useUser();
+  const { planTier, isPowerliftingAdvancedActive, profile } = useUser();
+  const { t } = useLanguage();
   const { getSuggestion } = useTrainingLog();
   const { getCustomWorkout } = useCustomWorkouts();
   const workout = WORKOUTS.find((w) => w.id === route.params.workoutId) ?? getCustomWorkout(route.params.workoutId);
   const exercise = workout?.exercises.find((e) => e.id === route.params.exerciseId);
 
-  if (!workout || !exercise) return null;
+  const blockCapture = shouldPreventScreenCapture(workout, isPowerliftingAdvancedActive);
+
+  if (!workout || !exercise) {
+    return (
+      <SafeAreaView style={styles.safe} edges={['top']}>
+        <View style={styles.loadingWrap}>
+          <ActivityIndicator color={colors.primary} size="large" />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   const isPro = planTier === 'pro';
   const suggestion = getSuggestion(exercise.id);
+  const injuryMatches = getMatchingInjuriesForExercise(exercise, profile?.injuryAreas);
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
+    <>
+      <PreventScreenCapture active={blockCapture} />
+      <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.header}>
         <Pressable onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="chevron-back" size={22} color={colors.text} />
@@ -44,7 +63,8 @@ export default function ExerciseDetailScreen() {
         <View style={styles.demoRow}>
           <ExerciseAnimation
             kind={exercise.animation}
-            size={200}
+            exerciseId={exercise.id}
+            size={240}
             highlightColor={getMuscleGroup(exercise.primaryMuscles[0]).color}
           />
         </View>
@@ -56,21 +76,27 @@ export default function ExerciseDetailScreen() {
         </View>
 
         <View style={styles.pillRow}>
-          <Pill label={`${exercise.sets} séries`} tone="primary" />
-          <Pill label={`${exercise.reps} repetições`} tone="primary" />
-          <Pill label={`Descanso ${exercise.restSeconds}s`} tone="gold" />
+          <Pill label={t('exerciseDetail.sets', { count: exercise.sets })} tone="primary" />
+          <Pill label={t('exerciseDetail.reps', { reps: exercise.reps })} tone="primary" />
+          <Pill label={t('exerciseDetail.rest', { seconds: exercise.restSeconds })} tone="gold" />
         </View>
 
+        {injuryMatches.length > 0 ? (
+          <View style={{ marginTop: spacing.md }}>
+            <InjuryCautionBanner injuries={injuryMatches} />
+          </View>
+        ) : null}
+
         <Card style={{ marginTop: spacing.lg }}>
-          <Text style={styles.sectionLabel}>Grupo muscular</Text>
-          <Text style={styles.value}>{exercise.muscleGroup}</Text>
+          <Text style={styles.sectionLabel}>{t('exerciseDetail.muscleGroup')}</Text>
+          <Text style={styles.value}>{t(muscleGroupLabelKey(exercise.primaryMuscles[0]))}</Text>
           <View style={styles.muscleChipRow}>
             {exercise.primaryMuscles.map((m) => {
               const info = getMuscleGroup(m);
               return (
                 <View key={m} style={[styles.muscleChip, { backgroundColor: `${info.color}26`, borderColor: info.color }]}>
                   <View style={[styles.muscleDot, { backgroundColor: info.color }]} />
-                  <Text style={[styles.muscleChipText, { color: info.color }]}>{info.label}</Text>
+                  <Text style={[styles.muscleChipText, { color: info.color }]}>{t(muscleGroupLabelKey(m))}</Text>
                 </View>
               );
             })}
@@ -78,7 +104,7 @@ export default function ExerciseDetailScreen() {
         </Card>
 
         <Card style={{ marginTop: spacing.md }}>
-          <Text style={styles.sectionLabel}>Como executar</Text>
+          <Text style={styles.sectionLabel}>{t('exerciseDetail.howTo')}</Text>
           {exercise.instructions.map((step, i) => (
             <View key={i} style={styles.stepRow}>
               <View style={styles.stepBadge}>
@@ -103,8 +129,8 @@ export default function ExerciseDetailScreen() {
             />
             <Text style={styles.suggestionText}>
               {suggestion.suggestion === 'increase_load'
-                ? `RPE médio recente: ${suggestion.avgRpe.toFixed(1)} — esforço baixo, considere aumentar a carga.`
-                : `RPE médio recente: ${suggestion.avgRpe.toFixed(1)} — esforço alto, considere descansar mais.`}
+                ? t('exerciseDetail.suggestionIncrease', { rpe: suggestion.avgRpe.toFixed(1) })
+                : t('exerciseDetail.suggestionRest', { rpe: suggestion.avgRpe.toFixed(1) })}
             </Text>
           </Card>
         ) : null}
@@ -114,7 +140,7 @@ export default function ExerciseDetailScreen() {
             <Card style={{ marginTop: spacing.md }}>
               <View style={styles.checklistHeader}>
                 <Ionicons name="body" size={16} color={colors.primary} />
-                <Text style={styles.sectionLabel}>Postura, respiração e alinhamento</Text>
+                <Text style={styles.sectionLabel}>{t('exerciseDetail.postureTitle')}</Text>
               </View>
               {exercise.postureTips.map((tip, i) => (
                 <View key={i} style={styles.checkRow}>
@@ -127,7 +153,7 @@ export default function ExerciseDetailScreen() {
             <Card style={{ marginTop: spacing.md }}>
               <View style={styles.checklistHeader}>
                 <Ionicons name="warning" size={16} color={colors.danger} />
-                <Text style={styles.sectionLabel}>Erros comuns a evitar</Text>
+                <Text style={styles.sectionLabel}>{t('exerciseDetail.errorsAvoid')}</Text>
               </View>
               {exercise.commonMistakes.map((mistake, i) => (
                 <View key={i} style={styles.checkRow}>
@@ -140,12 +166,10 @@ export default function ExerciseDetailScreen() {
         ) : (
           <Card style={styles.teaserCard}>
             <Ionicons name="lock-closed" size={20} color={colors.gold} />
-            <Text style={styles.teaserTitle}>Checklist guiado de postura no Pro</Text>
-            <Text style={styles.teaserSubtitle}>
-              Pontos-chave de postura/respiração e erros comuns a evitar em cada exercício.
-            </Text>
+            <Text style={styles.teaserTitle}>{t('exerciseDetail.proTeaserTitle')}</Text>
+            <Text style={styles.teaserSubtitle}>{t('exerciseDetail.proTeaserSubtitle')}</Text>
             <PrimaryButton
-              label="Ver plano Pro"
+              label={t('common.viewProPlan')}
               icon="star"
               variant="gold"
               onPress={() => (navigation.getParent() as any)?.navigate('Perfil', { screen: 'Paywall' })}
@@ -153,16 +177,16 @@ export default function ExerciseDetailScreen() {
           </Card>
         )}
 
-        <Text style={styles.tip}>
-          💡 A animação acima ilustra o padrão de movimento. Ajuste carga e amplitude conforme sua mobilidade.
-        </Text>
+        <Text style={styles.tip}>{t('exerciseDetail.animationTip')}</Text>
       </ScrollView>
     </SafeAreaView>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
+  loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',

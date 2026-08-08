@@ -1,7 +1,7 @@
 import { NavigationContainer, DarkTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React, { useMemo, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, InteractionManager, StyleSheet, Text, View } from 'react-native';
 import { useUser } from '../context/UserContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
@@ -50,34 +50,46 @@ export default function RootNavigator() {
   const { isLoggedIn, loading: authLoading } = useAuth();
   const { locale } = useLanguage();
   const [splashDone, setSplashDone] = useState(false);
+  const [navReady, setNavReady] = useState(false);
 
   const appReady = !userLoading && !authLoading;
-  const navigationKey = useMemo(
-    () => `${isLoggedIn}-${isOnboarded}`,
-    [isLoggedIn, isOnboarded],
-  );
   const initialRouteName = useMemo(
     () => getInitialRoute(isLoggedIn, isOnboarded),
     [isLoggedIn, isOnboarded],
   );
+  const navigationKey = useMemo(
+    () => `${locale}-${isLoggedIn}-${isOnboarded}`,
+    [locale, isLoggedIn, isOnboarded],
+  );
+
+  React.useEffect(() => {
+    if (!splashDone || !appReady) {
+      setNavReady(false);
+      return;
+    }
+    const task = InteractionManager.runAfterInteractions(() => {
+      setNavReady(true);
+    });
+    return () => task.cancel();
+  }, [splashDone, appReady, navigationKey]);
 
   if (!splashDone) {
     return <SplashScreen onFinish={() => setSplashDone(true)} ready={appReady} />;
   }
 
-  if (!appReady) {
+  if (!appReady || !navReady) {
     return <BootstrapLoading />;
   }
 
   return (
     <View style={styles.root}>
-      <NavigationContainer key={locale} theme={navTheme}>
+      <NavigationContainer key={navigationKey} theme={navTheme}>
         <Stack.Navigator
-          key={navigationKey}
           initialRouteName={initialRouteName}
           screenOptions={{
             headerShown: false,
             contentStyle: { backgroundColor: colors.background },
+            animation: 'fade',
           }}
         >
           <Stack.Screen name="Login" component={LoginScreen} />

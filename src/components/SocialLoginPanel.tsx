@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import * as Facebook from 'expo-auth-session/providers/facebook';
@@ -305,18 +306,30 @@ export default function SocialLoginPanel() {
           <Text style={styles.devBtnText}>{t('login.devContinue')}</Text>
         </Pressable>
       ) : !googleConfigured && !facebookConfigured ? (
-        <Pressable
-          onPress={() =>
-            void loginWithSession({
-              provider: 'apple',
-              userId: `beta-${Date.now()}`,
-              name: 'Beta Tester',
-            })
-          }
-          style={({ pressed }) => [styles.devBtn, pressed && styles.providerPressed]}
-        >
-          <Text style={styles.devBtnText}>{t('login.betaContinue')}</Text>
-        </Pressable>
+        <>
+          <Pressable
+            onPress={() =>
+              void loginWithSession({
+                provider: 'apple',
+                userId: `beta-${Date.now()}`,
+                name: 'Beta Tester',
+              })
+            }
+            style={({ pressed }) => [styles.devBtn, pressed && styles.providerPressed]}
+          >
+            <Text style={styles.devBtnText}>{t('login.betaContinue')}</Text>
+          </Pressable>
+          <Pressable
+            onPress={() =>
+              void AsyncStorage.clear().then(() => {
+                Alert.alert(t('login.resetDoneTitle'), t('login.resetDoneBody'));
+              })
+            }
+            style={({ pressed }) => [styles.resetBtn, pressed && styles.providerPressed]}
+          >
+            <Text style={styles.resetBtnText}>{t('login.resetAppData')}</Text>
+          </Pressable>
+        </>
       ) : null}
     </View>
   );
@@ -346,4 +359,12 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
   },
   devBtnText: { color: colors.textMuted, fontWeight: '600', fontSize: 13 },
+  resetBtn: {
+    minHeight: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: spacing.xs,
+  },
+  resetBtnText: { color: colors.textMuted, fontWeight: '600', fontSize: 12 },
 });

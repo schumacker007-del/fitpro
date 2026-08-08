@@ -69,6 +69,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
+
     (async () => {
       try {
         const [rawProfile, rawPlan, rawPlAdvanced] = await Promise.all([
@@ -77,8 +79,14 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           AsyncStorage.getItem(POWERLIFTING_ADVANCED_KEY),
         ]);
         if (rawProfile) {
-          const parsed = JSON.parse(rawProfile) as UserProfile;
-          setProfile({ ...parsed, injuryAreas: normalizeInjuryAreas(parsed.injuryAreas) });
+          try {
+            const parsed = JSON.parse(rawProfile) as UserProfile;
+            if (!cancelled) {
+              setProfile({ ...parsed, injuryAreas: normalizeInjuryAreas(parsed.injuryAreas) });
+            }
+          } catch {
+            await AsyncStorage.removeItem(PROFILE_KEY);
+          }
         }
         if (rawPlan === 'pro') setPlanTier('pro');
 
@@ -90,9 +98,18 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           }
         }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     })();
+
+    const safetyTimer = setTimeout(() => {
+      if (!cancelled) setLoading(false);
+    }, 5000);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(safetyTimer);
+    };
   }, []);
 
   const saveProfile = useCallback(async (next: UserProfile) => {

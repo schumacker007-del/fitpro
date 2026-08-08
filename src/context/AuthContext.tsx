@@ -49,9 +49,24 @@ export function AuthProvider({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
+
     AsyncStorage.getItem(AUTH_SESSION_KEY)
-      .then((raw) => setSession(parseSession(raw)))
-      .finally(() => setLoading(false));
+      .then((raw) => {
+        if (!cancelled) setSession(parseSession(raw));
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    const safetyTimer = setTimeout(() => {
+      if (!cancelled) setLoading(false);
+    }, 5000);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(safetyTimer);
+    };
   }, []);
 
   const loginWithSession = useCallback(async (next: AuthUserSession) => {

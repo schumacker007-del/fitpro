@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SocialLoginPanel from '../components/SocialLoginPanel';
 import LegalFooter from '../components/LegalFooter';
+import BuildBadge from '../components/BuildBadge';
 import { useLanguage } from '../context/LanguageContext';
 import { colors, spacing, typography } from '../theme';
 
@@ -11,6 +12,7 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
+      <BuildBadge />
       <View style={styles.content}>
         <View style={styles.logoRow}>
           <View style={styles.logoDot} />

@@ -59,22 +59,22 @@ export default function App() {
   const [dataResetKey, setDataResetKey] = useState(0);
 
   return (
-    <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#050810' }}>
-      <SafeAreaProvider style={{ flex: 1, backgroundColor: '#050810' }}>
-        <LanguageProvider>
-          <AppPreferencesProvider>
-            <AuthProvider onAccountDeleted={() => setDataResetKey((key) => key + 1)}>
-              <AppDataProviders key={dataResetKey}>
-                <AppErrorBoundary>
+    <AppErrorBoundary>
+      <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#050810' }}>
+        <SafeAreaProvider style={{ flex: 1, backgroundColor: '#050810' }}>
+          <LanguageProvider>
+            <AppPreferencesProvider>
+              <AuthProvider onAccountDeleted={() => setDataResetKey((key) => key + 1)}>
+                <AppDataProviders key={dataResetKey}>
                   <ReminderBootstrap />
                   <RootNavigator />
-                </AppErrorBoundary>
-                <StatusBar style="light" />
-              </AppDataProviders>
-            </AuthProvider>
-          </AppPreferencesProvider>
-        </LanguageProvider>
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
+                  <StatusBar style="light" />
+                </AppDataProviders>
+              </AuthProvider>
+            </AppPreferencesProvider>
+          </LanguageProvider>
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
+    </AppErrorBoundary>
   );
 }

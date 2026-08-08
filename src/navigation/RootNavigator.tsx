@@ -5,6 +5,7 @@ import { ActivityIndicator, InteractionManager, StyleSheet, Text, View } from 'r
 import { useUser } from '../context/UserContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
+import LoginScreen from '../screens/LoginScreen';
 import SplashScreen from '../screens/SplashScreen';
 import { colors } from '../theme';
 import { RootStackParamList } from './types';
@@ -57,7 +58,7 @@ export default function RootNavigator() {
   );
 
   React.useEffect(() => {
-    if (!splashDone || !appReady) {
+    if (!splashDone || !appReady || !isLoggedIn) {
       setNavReady(false);
       return;
     }
@@ -65,13 +66,27 @@ export default function RootNavigator() {
       setNavReady(true);
     });
     return () => task.cancel();
-  }, [splashDone, appReady, navigationKey]);
+  }, [splashDone, appReady, isLoggedIn, navigationKey]);
 
   if (!splashDone) {
     return <SplashScreen onFinish={() => setSplashDone(true)} ready={appReady} />;
   }
 
-  if (!appReady || !navReady) {
+  if (!appReady) {
+    return <BootstrapLoading />;
+  }
+
+  // Cold-start login gate: avoid NavigationContainer + native stack on first paint.
+  // TestFlight build 11 crashed when mounting the stack right after splash.
+  if (!isLoggedIn) {
+    return (
+      <View style={styles.root}>
+        <LoginScreen standalone />
+      </View>
+    );
+  }
+
+  if (!navReady) {
     return <BootstrapLoading />;
   }
 

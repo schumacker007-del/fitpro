@@ -66,13 +66,6 @@
           "icon": "./assets/icon.png",
           "color": "#2ECC71"
         }
-      ],
-      [
-        "@kingstinct/react-native-healthkit",
-        {
-          "NSHealthShareUsageDescription": "O FitPro precisa ler dados do Apple Saúde para sincronizar peso, altura e medidas corporais. / FitPro needs access to Apple Health to sync weight, height, and body measurements.",
-          "NSHealthUpdateUsageDescription": "O FitPro salva treinos e medidas corporais no Apple Saúde para acompanhar sua evolução. / FitPro saves workouts and body measurements to Apple Health to track your progress."
-        }
       ]
     ],
     "extra": {

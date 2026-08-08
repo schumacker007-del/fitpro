@@ -13,7 +13,6 @@ import { ProgressPhotoProvider } from './context/ProgressPhotoContext';
 import { TrainingFeedProvider } from './context/TrainingFeedContext';
 import { TrainingLogProvider } from './context/TrainingLogContext';
 import { UserProvider, useUser } from './context/UserContext';
-import { PurchasesProvider } from './context/PurchasesContext';
 import { ReminderSettingsProvider } from './context/ReminderSettingsContext';
 import { HealthIntegrationProvider } from './context/HealthIntegrationContext';
 import { BodyMeasurementsProvider } from './context/BodyMeasurementsContext';
@@ -21,6 +20,17 @@ import { WorkoutDraftProvider } from './context/WorkoutDraftContext';
 import ReminderBootstrap from './components/ReminderBootstrap';
 import RootNavigator from './navigation/RootNavigator';
 import { colors } from './theme';
+
+function LazyPurchasesProvider({ children }: { children: React.ReactNode }) {
+  const Provider = React.useMemo(
+    () =>
+      require('./context/PurchasesContext').PurchasesProvider as React.ComponentType<{
+        children: React.ReactNode;
+      }>,
+    [],
+  );
+  return <Provider>{children}</Provider>;
+}
 
 function AppDataProviders({ children }: { children: React.ReactNode }) {
   return (
@@ -36,7 +46,7 @@ function AppDataProviders({ children }: { children: React.ReactNode }) {
                       <HealthIntegrationProvider>
                         <BodyMeasurementsProvider>
                           <WorkoutDraftProvider>
-                            <PurchasesProvider>{children}</PurchasesProvider>
+                            <LazyPurchasesProvider>{children}</LazyPurchasesProvider>
                           </WorkoutDraftProvider>
                         </BodyMeasurementsProvider>
                       </HealthIntegrationProvider>

@@ -13,7 +13,12 @@ function SocialLoginPanelLazy() {
   return <Panel />;
 }
 
-export default function LoginScreen() {
+interface Props {
+  /** Rendered outside NavigationContainer on cold start (TestFlight gate). */
+  standalone?: boolean;
+}
+
+export default function LoginScreen({ standalone = false }: Props) {
   const { t } = useLanguage();
   const betaOnly = !__DEV__ && !isGoogleAuthConfigured() && !isFacebookAuthConfigured();
 
@@ -30,7 +35,7 @@ export default function LoginScreen() {
 
         {betaOnly ? <BetaLoginPanel /> : <SocialLoginPanelLazy />}
 
-        <LegalFooter />
+        <LegalFooter standalone={standalone} />
 
         {__DEV__ ? <Text style={styles.disclaimer}>{t('login.disclaimer')}</Text> : null}
       </View>

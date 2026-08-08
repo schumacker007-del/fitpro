@@ -11,8 +11,6 @@ import PrivacyPolicyScreen from '../screens/PrivacyPolicyScreen';
 import SplashScreen from '../screens/SplashScreen';
 import TermsOfUseScreen from '../screens/TermsOfUseScreen';
 import { colors } from '../theme';
-import MainTabs from './MainTabs';
-import GlobalSearchScreen from '../screens/GlobalSearchScreen';
 import { RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -96,12 +94,12 @@ export default function RootNavigator() {
           <Stack.Screen name="Onboarding" component={OnboardingScreen} />
           <Stack.Screen
             name="Main"
-            component={MainTabs}
+            getComponent={() => require('./MainTabs').default}
             options={{ presentation: 'card', animation: 'none' }}
           />
           <Stack.Screen
             name="GlobalSearch"
-            component={GlobalSearchScreen}
+            getComponent={() => require('../screens/GlobalSearchScreen').default}
             options={{ animation: 'slide_from_bottom' }}
           />
           <Stack.Screen

@@ -11,7 +11,6 @@ import AppleHealthSettingsScreen from '../screens/AppleHealthSettingsScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import LanguageSettingsScreen from '../screens/LanguageSettingsScreen';
 import MedicalRecordsScreen from '../screens/MedicalRecordsScreen';
-import PaywallScreen from '../screens/PaywallScreen';
 import PrivacyPolicyScreen from '../screens/PrivacyPolicyScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import TermsOfUseScreen from '../screens/TermsOfUseScreen';
@@ -28,7 +27,11 @@ export default function ProfileNavigator() {
       <Stack.Screen name="Profile" component={ProfileScreen} />
       <Stack.Screen name="Settings" component={SettingsScreen} />
       <Stack.Screen name="FeaturePromo" component={FeaturePromoScreen} options={{ presentation: 'modal' }} />
-      <Stack.Screen name="Paywall" component={PaywallScreen} options={{ presentation: 'modal' }} />
+      <Stack.Screen
+        name="Paywall"
+        getComponent={() => require('../screens/PaywallScreen').default}
+        options={{ presentation: 'modal' }}
+      />
       <Stack.Screen name="CustomPlan" component={CustomPlanScreen} options={{ presentation: 'modal' }} />
       <Stack.Screen name="ProgressPhotos" component={ProgressPhotosScreen} options={{ presentation: 'modal' }} />
       <Stack.Screen name="MedicalRecords" component={MedicalRecordsScreen} options={{ presentation: 'modal' }} />

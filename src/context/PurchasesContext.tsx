@@ -6,7 +6,7 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import { PurchasesPackage } from 'react-native-purchases';
+import type { PurchasesPackage } from 'react-native-purchases';
 import { isDemoPurchaseMode } from '../config/iap';
 import { useAuth } from './AuthContext';
 import { useUser } from './UserContext';

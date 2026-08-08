@@ -1,11 +1,3 @@
-import Purchases, {
-  CustomerInfo,
-  LOG_LEVEL,
-  PACKAGE_TYPE,
-  PurchasesOfferings,
-  PurchasesPackage,
-  PURCHASES_ERROR_CODE,
-} from 'react-native-purchases';
 import { Linking, Platform } from 'react-native';
 import {
   canUseRealPurchases,
@@ -15,6 +7,8 @@ import {
 } from '../config/iap';
 import { POWERLIFTING_ADVANCED_DURATION_DAYS } from '../context/UserContext';
 
+export type { CustomerInfo, PurchasesOfferings, PurchasesPackage } from 'react-native-purchases';
+
 export interface EntitlementSyncResult {
   planTier: 'free' | 'pro';
   powerliftingAdvanced: {
@@ -23,7 +17,18 @@ export interface EntitlementSyncResult {
   } | null;
 }
 
+type PurchasesModule = typeof import('react-native-purchases');
+
+let purchasesModule: PurchasesModule | null = null;
 let configured = false;
+
+async function loadPurchasesModule(): Promise<PurchasesModule | null> {
+  if (!canUseRealPurchases()) return null;
+  if (!purchasesModule) {
+    purchasesModule = await import('react-native-purchases');
+  }
+  return purchasesModule;
+}
 
 function addDays(date: Date, days: number): Date {
   const next = new Date(date);
@@ -37,6 +42,11 @@ export async function configurePurchases(userId?: string): Promise<void> {
   const apiKey = getRevenueCatApiKey();
   if (!apiKey || apiKey.length < 8) return;
   if (apiKey.startsWith('test_') && !__DEV__) return;
+
+  const mod = await loadPurchasesModule();
+  if (!mod) return;
+
+  const { default: Purchases, LOG_LEVEL } = mod;
 
   if (!configured) {
     if (__DEV__) {
@@ -53,6 +63,10 @@ export async function configurePurchases(userId?: string): Promise<void> {
 export async function syncPurchasesUser(userId?: string): Promise<void> {
   if (!canUseRealPurchases() || !configured) return;
 
+  const mod = await loadPurchasesModule();
+  if (!mod) return;
+
+  const { default: Purchases } = mod;
   if (userId) {
     await Purchases.logIn(userId);
   } else {
@@ -60,14 +74,15 @@ export async function syncPurchasesUser(userId?: string): Promise<void> {
   }
 }
 
-export async function getOfferings(): Promise<PurchasesOfferings | null> {
-  if (!canUseRealPurchases()) return null;
-  return Purchases.getOfferings();
+export async function getOfferings(): Promise<import('react-native-purchases').PurchasesOfferings | null> {
+  const mod = await loadPurchasesModule();
+  if (!mod) return null;
+  return mod.default.getOfferings();
 }
 
-export function findProPackages(offerings: PurchasesOfferings): {
-  monthly: PurchasesPackage | null;
-  yearly: PurchasesPackage | null;
+export function findProPackages(offerings: import('react-native-purchases').PurchasesOfferings): {
+  monthly: import('react-native-purchases').PurchasesPackage | null;
+  yearly: import('react-native-purchases').PurchasesPackage | null;
 } {
   const current = offerings.current;
   if (!current) {
@@ -77,21 +92,23 @@ export function findProPackages(offerings: PurchasesOfferings): {
   const monthly =
     current.availablePackages.find(
       (pkg) =>
-        pkg.packageType === PACKAGE_TYPE.MONTHLY ||
+        pkg.packageType === 'MONTHLY' ||
         pkg.product.identifier === IAP_PRODUCT_IDS.proMonthly,
     ) ?? null;
 
   const yearly =
     current.availablePackages.find(
       (pkg) =>
-        pkg.packageType === PACKAGE_TYPE.ANNUAL ||
+        pkg.packageType === 'ANNUAL' ||
         pkg.product.identifier === IAP_PRODUCT_IDS.proYearly,
     ) ?? null;
 
   return { monthly, yearly };
 }
 
-export function findPowerliftingPackage(offerings: PurchasesOfferings): PurchasesPackage | null {
+export function findPowerliftingPackage(
+  offerings: import('react-native-purchases').PurchasesOfferings,
+): import('react-native-purchases').PurchasesPackage | null {
   for (const offering of Object.values(offerings.all)) {
     const match = offering.availablePackages.find(
       (pkg) => pkg.product.identifier === IAP_PRODUCT_IDS.powerliftingAdvanced,
@@ -101,12 +118,19 @@ export function findPowerliftingPackage(offerings: PurchasesOfferings): Purchase
   return null;
 }
 
-export async function purchaseProPackage(pkg: PurchasesPackage): Promise<CustomerInfo> {
-  const { customerInfo } = await Purchases.purchasePackage(pkg);
+export async function purchaseProPackage(
+  pkg: import('react-native-purchases').PurchasesPackage,
+): Promise<import('react-native-purchases').CustomerInfo> {
+  const mod = await loadPurchasesModule();
+  if (!mod) throw new Error('Purchases unavailable');
+  const { customerInfo } = await mod.default.purchasePackage(pkg);
   return customerInfo;
 }
 
-export async function purchasePowerliftingAdvanced(): Promise<CustomerInfo> {
+export async function purchasePowerliftingAdvanced(): Promise<import('react-native-purchases').CustomerInfo> {
+  const mod = await loadPurchasesModule();
+  if (!mod) throw new Error('Purchases unavailable');
+
   const offerings = await getOfferings();
   if (!offerings) {
     throw new Error('Offerings unavailable');
@@ -114,24 +138,28 @@ export async function purchasePowerliftingAdvanced(): Promise<CustomerInfo> {
 
   const pkg = findPowerliftingPackage(offerings);
   if (pkg) {
-    const { customerInfo } = await Purchases.purchasePackage(pkg);
+    const { customerInfo } = await mod.default.purchasePackage(pkg);
     return customerInfo;
   }
 
-  const products = await Purchases.getProducts([IAP_PRODUCT_IDS.powerliftingAdvanced]);
+  const products = await mod.default.getProducts([IAP_PRODUCT_IDS.powerliftingAdvanced]);
   if (products.length === 0) {
     throw new Error('Powerlifting product not found');
   }
 
-  const { customerInfo } = await Purchases.purchaseStoreProduct(products[0]);
+  const { customerInfo } = await mod.default.purchaseStoreProduct(products[0]);
   return customerInfo;
 }
 
-export async function restorePurchases(): Promise<CustomerInfo> {
-  return Purchases.restorePurchases();
+export async function restorePurchases(): Promise<import('react-native-purchases').CustomerInfo> {
+  const mod = await loadPurchasesModule();
+  if (!mod) throw new Error('Purchases unavailable');
+  return mod.default.restorePurchases();
 }
 
-export function mapCustomerInfoToEntitlements(customerInfo: CustomerInfo): EntitlementSyncResult {
+export function mapCustomerInfoToEntitlements(
+  customerInfo: import('react-native-purchases').CustomerInfo,
+): EntitlementSyncResult {
   const proEntitlement = customerInfo.entitlements.active[IAP_ENTITLEMENTS.pro];
   const proActive = proEntitlement?.isActive ?? false;
 
@@ -161,7 +189,9 @@ export function mapCustomerInfoToEntitlements(customerInfo: CustomerInfo): Entit
 
 export async function syncEntitlementsFromRevenueCat(): Promise<EntitlementSyncResult | null> {
   if (!canUseRealPurchases()) return null;
-  const customerInfo = await Purchases.getCustomerInfo();
+  const mod = await loadPurchasesModule();
+  if (!mod) return null;
+  const customerInfo = await mod.default.getCustomerInfo();
   return mapCustomerInfoToEntitlements(customerInfo);
 }
 
@@ -181,7 +211,7 @@ export function isPurchaseCancelled(error: unknown): boolean {
   if ('userCancelled' in error && (error as { userCancelled?: boolean }).userCancelled) {
     return true;
   }
-  if ('code' in error && (error as { code?: string }).code === PURCHASES_ERROR_CODE.PURCHASE_CANCELLED_ERROR) {
+  if ('code' in error && (error as { code?: string }).code === 'PURCHASE_CANCELLED_ERROR') {
     return true;
   }
   return false;

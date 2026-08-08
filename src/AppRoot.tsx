@@ -95,20 +95,11 @@ function AppShell() {
 
   const navigator = <RootNavigator />;
 
-  // Skip GamificationProvider AsyncStorage bootstrap on cold-start gate path.
-  if (!isLoggedIn) {
+  // Skip GamificationProvider until onboarding is complete.
+  if (!isLoggedIn || !isOnboarded) {
     return (
       <>
         {navigator}
-        <StatusBar style="light" />
-      </>
-    );
-  }
-
-  if (!needsHeavyProviders) {
-    return (
-      <>
-        <GamificationProvider>{navigator}</GamificationProvider>
         <StatusBar style="light" />
       </>
     );

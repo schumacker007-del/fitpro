@@ -9,7 +9,7 @@ import { useAuth } from '../context/AuthContext';
  */
 export default function ColdStartGate() {
   const { loginWithSession } = useAuth();
-  const build = Constants.nativeBuildVersion ?? '?';
+  const build = Constants.expoConfig?.ios?.buildNumber ?? Constants.nativeBuildVersion ?? '?';
   const version = Constants.expoConfig?.version ?? '1.0.0';
 
   return (

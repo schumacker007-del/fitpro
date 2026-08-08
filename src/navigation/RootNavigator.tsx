@@ -8,12 +8,6 @@ import SplashScreen from '../screens/SplashScreen';
 import { colors } from '../theme';
 import { RootStackParamList } from './types';
 
-function getInitialRoute(isLoggedIn: boolean, isOnboarded: boolean): keyof RootStackParamList {
-  if (!isLoggedIn) return 'Login';
-  if (!isOnboarded) return 'Onboarding';
-  return 'Main';
-}
-
 function BootstrapLoading() {
   return (
     <View style={styles.bootstrap}>
@@ -30,30 +24,33 @@ export default function RootNavigator() {
   const { locale } = useLanguage();
   const [splashFinished, setSplashFinished] = useState(false);
   const [splashMounted, setSplashMounted] = useState(true);
-  const [navReady, setNavReady] = useState(false);
+  const [stackReady, setStackReady] = useState(false);
 
   const appReady = !userLoading && !authLoading;
-  const initialRouteName = useMemo(
-    () => getInitialRoute(isLoggedIn, isOnboarded),
-    [isLoggedIn, isOnboarded],
-  );
+  const needsAppStack = isLoggedIn && isOnboarded;
   const navigationKey = useMemo(
     () => `${locale}-${isLoggedIn}-${isOnboarded}`,
     [locale, isLoggedIn, isOnboarded],
   );
 
   React.useEffect(() => {
-    if (!splashFinished || !appReady || !isLoggedIn) {
-      setNavReady(false);
+    if (!splashFinished || !appReady || !needsAppStack) {
+      setStackReady(false);
       return;
     }
     const { enableScreens } = require('react-native-screens') as typeof import('react-native-screens');
     enableScreens(true);
-    const task = InteractionManager.runAfterInteractions(() => {
-      setNavReady(true);
+    let cancelled = false;
+    const rafId = requestAnimationFrame(() => {
+      setTimeout(() => {
+        if (!cancelled) setStackReady(true);
+      }, 100);
     });
-    return () => task.cancel();
-  }, [splashFinished, appReady, isLoggedIn, navigationKey]);
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(rafId);
+    };
+  }, [splashFinished, appReady, needsAppStack, navigationKey]);
 
   React.useEffect(() => {
     if (!splashFinished || !appReady || isLoggedIn) return;
@@ -90,7 +87,16 @@ export default function RootNavigator() {
     );
   }
 
-  if (!navReady) {
+  if (isLoggedIn && !isOnboarded) {
+    const OnboardingScreen = require('../screens/OnboardingScreen').default as React.ComponentType;
+    return (
+      <View style={styles.root}>
+        <OnboardingScreen />
+      </View>
+    );
+  }
+
+  if (!stackReady) {
     return <BootstrapLoading />;
   }
 
@@ -101,7 +107,7 @@ export default function RootNavigator() {
 
   return (
     <View style={styles.root}>
-      <AppStack initialRouteName={initialRouteName} navigationKey={navigationKey} />
+      <AppStack initialRouteName="Main" navigationKey={navigationKey} />
     </View>
   );
 }

@@ -7,10 +7,32 @@ import { useAuth } from '../context/AuthContext';
  * Ultra-minimal cold-start gate — no SafeAreaView, navigation, gradients, or heavy components.
  * TestFlight build 12 crashed when LoginScreen mounted right after splash.
  */
+function resolveBuildNumber(): string {
+  const manifest = (Constants as { manifest?: { ios?: { buildNumber?: string } } }).manifest;
+  return (
+    Constants.nativeBuildVersion ??
+    Constants.expoConfig?.ios?.buildNumber ??
+    manifest?.ios?.buildNumber ??
+    '?'
+  );
+}
+
 export default function ColdStartGate() {
   const { loginWithSession } = useAuth();
-  const build = Constants.expoConfig?.ios?.buildNumber ?? Constants.nativeBuildVersion ?? '?';
-  const version = Constants.expoConfig?.version ?? '1.0.0';
+  const build = resolveBuildNumber();
+  const version = Constants.expoConfig?.version ?? Constants.nativeAppVersion ?? '1.0.0';
+
+  const handleContinue = () => {
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        void loginWithSession({
+          provider: 'apple',
+          userId: `beta-${Date.now()}`,
+          name: 'Beta Tester',
+        });
+      }, 50);
+    });
+  };
 
   return (
     <View style={styles.root}>
@@ -18,13 +40,7 @@ export default function ColdStartGate() {
       <Text style={styles.build}>v{version} ({build})</Text>
       <Pressable
         style={({ pressed }) => [styles.btn, pressed && styles.btnPressed]}
-        onPress={() =>
-          void loginWithSession({
-            provider: 'apple',
-            userId: `beta-${Date.now()}`,
-            name: 'Beta Tester',
-          })
-        }
+        onPress={handleContinue}
       >
         <Text style={styles.btnText}>Continuar no beta</Text>
       </Pressable>

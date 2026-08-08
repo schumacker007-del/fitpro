@@ -88,10 +88,11 @@ export default function RootNavigator() {
   }
 
   if (isLoggedIn && !isOnboarded) {
-    const OnboardingScreen = require('../screens/OnboardingScreen').default as React.ComponentType;
+    const MinimalOnboardingScreen = require('../screens/MinimalOnboardingScreen')
+      .default as React.ComponentType;
     return (
       <View style={styles.root}>
-        <OnboardingScreen />
+        <MinimalOnboardingScreen />
       </View>
     );
   }

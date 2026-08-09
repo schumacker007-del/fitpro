@@ -38,7 +38,7 @@ export default function AppStack({ initialRouteName, navigationKey }: Props) {
         <Stack.Screen name="Onboarding" getComponent={() => require('../screens/OnboardingScreen').default} />
         <Stack.Screen
           name="Main"
-          getComponent={() => require('./MainTabs').default}
+          getComponent={() => require('./MainEntry').default}
           options={{ presentation: 'card', animation: 'none' }}
         />
         <Stack.Screen

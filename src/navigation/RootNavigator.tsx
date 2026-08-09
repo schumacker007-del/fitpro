@@ -3,6 +3,7 @@ import { ActivityIndicator, InteractionManager, StyleSheet, Text, View } from 'r
 import { useUser } from '../context/UserContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
+import { useMainUnlock } from '../context/MainUnlockContext';
 import ColdStartGate from '../screens/ColdStartGate';
 import SplashScreen from '../screens/SplashScreen';
 import { colors } from '../theme';
@@ -21,13 +22,14 @@ function BootstrapLoading() {
 export default function RootNavigator() {
   const { isOnboarded, loading: userLoading } = useUser();
   const { isLoggedIn, loading: authLoading } = useAuth();
+  const { mainUnlocked } = useMainUnlock();
   const { locale } = useLanguage();
   const [splashFinished, setSplashFinished] = useState(false);
   const [splashMounted, setSplashMounted] = useState(true);
   const [stackReady, setStackReady] = useState(false);
 
   const appReady = !userLoading && !authLoading;
-  const needsAppStack = isLoggedIn && isOnboarded;
+  const needsAppStack = isLoggedIn && isOnboarded && mainUnlocked;
   const navigationKey = useMemo(
     () => `${locale}-${isLoggedIn}-${isOnboarded}`,
     [locale, isLoggedIn, isOnboarded],
@@ -93,6 +95,15 @@ export default function RootNavigator() {
     return (
       <View style={styles.root}>
         <MinimalOnboardingScreen />
+      </View>
+    );
+  }
+
+  if (isLoggedIn && isOnboarded && !mainUnlocked) {
+    const MinimalMainGate = require('../screens/MinimalMainGate').default as React.ComponentType;
+    return (
+      <View style={styles.root}>
+        <MinimalMainGate />
       </View>
     );
   }

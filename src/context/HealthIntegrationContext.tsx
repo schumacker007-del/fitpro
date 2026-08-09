@@ -63,10 +63,7 @@ export function HealthIntegrationProvider({ children }: { children: React.ReactN
     setAuthorizationStatus(status);
   }, []);
 
-  useEffect(() => {
-    if (!loaded) return;
-    void refreshAuthorizationStatus();
-  }, [loaded, refreshAuthorizationStatus]);
+  // Do not touch native HealthKit on mount — authorization is refreshed on demand only.
 
   const persistSettings = useCallback(async (next: HealthIntegrationSettings) => {
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));

@@ -1,38 +1,28 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { useAuth } from '../context/AuthContext';
+import { useMainUnlock } from '../context/MainUnlockContext';
 import { resolveAppVersion, resolveBuildNumber } from '../utils/buildInfo';
 
 /**
- * Ultra-minimal cold-start gate — no SafeAreaView, navigation, gradients, or heavy components.
- * TestFlight build 12 crashed when LoginScreen mounted right after splash.
+ * Post-onboarding gate — RN primitives only. Defers AppDataProviders + AppStack
+ * until the user explicitly taps to continue (TestFlight build 16).
  */
-export default function ColdStartGate() {
-  const { loginWithSession } = useAuth();
+export default function MinimalMainGate() {
+  const { unlockMain } = useMainUnlock();
   const build = resolveBuildNumber();
   const version = resolveAppVersion();
-
-  const handleContinue = () => {
-    requestAnimationFrame(() => {
-      setTimeout(() => {
-        void loginWithSession({
-          provider: 'apple',
-          userId: `beta-${Date.now()}`,
-          name: 'Beta Tester',
-        });
-      }, 50);
-    });
-  };
 
   return (
     <View style={styles.root}>
       <Text style={styles.logo}>FitPro</Text>
+      <Text style={styles.title}>Perfil salvo!</Text>
+      <Text style={styles.subtitle}>Toque abaixo para abrir o app.</Text>
       <Text style={styles.build}>v{version} ({build})</Text>
       <Pressable
         style={({ pressed }) => [styles.btn, pressed && styles.btnPressed]}
-        onPress={handleContinue}
+        onPress={unlockMain}
       >
-        <Text style={styles.btnText}>Continuar no beta</Text>
+        <Text style={styles.btnText}>Abrir app</Text>
       </Pressable>
     </View>
   );
@@ -50,13 +40,26 @@ const styles = StyleSheet.create({
     color: '#F8FAFC',
     fontSize: 28,
     fontWeight: '900',
-    marginBottom: 12,
+    marginBottom: 16,
+  },
+  title: {
+    color: '#F8FAFC',
+    fontSize: 22,
+    fontWeight: '800',
+    marginBottom: 8,
+  },
+  subtitle: {
+    color: '#9BA1B0',
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 20,
+    textAlign: 'center',
   },
   build: {
     color: '#39FF14',
     fontSize: 11,
     fontWeight: '800',
-    marginBottom: 32,
+    marginBottom: 28,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,

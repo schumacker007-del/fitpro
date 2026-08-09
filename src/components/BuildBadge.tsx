@@ -1,11 +1,11 @@
-import Constants from 'expo-constants';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { colors } from '../theme';
+import { resolveAppVersion, resolveBuildNumber } from '../utils/buildInfo';
 
 export default function BuildBadge() {
-  const build = Constants.nativeBuildVersion ?? '?';
-  const version = Constants.expoConfig?.version ?? '1.0.0';
+  const build = resolveBuildNumber();
+  const version = resolveAppVersion();
 
   return (
     <View style={styles.wrap} pointerEvents="none">

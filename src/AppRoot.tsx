@@ -17,9 +17,12 @@ import { ReminderSettingsProvider } from './context/ReminderSettingsContext';
 import { HealthIntegrationProvider } from './context/HealthIntegrationContext';
 import { BodyMeasurementsProvider } from './context/BodyMeasurementsContext';
 import { WorkoutDraftProvider } from './context/WorkoutDraftContext';
+import { MainUnlockProvider, useMainUnlock } from './context/MainUnlockContext';
 import ReminderBootstrap from './components/ReminderBootstrap';
 import RootNavigator from './navigation/RootNavigator';
 import { colors } from './theme';
+
+const DEFERRED_PROVIDERS_DELAY_MS = 500;
 
 function LazyPurchasesProvider({ children }: { children: React.ReactNode }) {
   const Provider = React.useMemo(
@@ -32,33 +35,52 @@ function LazyPurchasesProvider({ children }: { children: React.ReactNode }) {
   return <Provider>{children}</Provider>;
 }
 
-function AppDataProviders({ children }: { children: React.ReactNode }) {
+function DeferredAppProviders({ children }: { children: React.ReactNode }) {
+  return (
+    <CustomPlanProvider>
+      <CustomWorkoutProvider>
+        <ProgressPhotoProvider>
+          <TrainingFeedProvider>
+            <MessageProvider>
+              <MedicalRecordProvider>
+                <ReminderSettingsProvider>
+                  <HealthIntegrationProvider>
+                    <BodyMeasurementsProvider>
+                      <WorkoutDraftProvider>
+                        <LazyPurchasesProvider>{children}</LazyPurchasesProvider>
+                      </WorkoutDraftProvider>
+                    </BodyMeasurementsProvider>
+                  </HealthIntegrationProvider>
+                </ReminderSettingsProvider>
+              </MedicalRecordProvider>
+            </MessageProvider>
+          </TrainingFeedProvider>
+        </ProgressPhotoProvider>
+      </CustomWorkoutProvider>
+    </CustomPlanProvider>
+  );
+}
+
+function CoreAppProviders({ children }: { children: React.ReactNode }) {
   return (
     <GamificationProvider>
-      <TrainingLogProvider>
-        <CustomPlanProvider>
-          <CustomWorkoutProvider>
-            <ProgressPhotoProvider>
-              <TrainingFeedProvider>
-                <MessageProvider>
-                  <MedicalRecordProvider>
-                    <ReminderSettingsProvider>
-                      <HealthIntegrationProvider>
-                        <BodyMeasurementsProvider>
-                          <WorkoutDraftProvider>
-                            <LazyPurchasesProvider>{children}</LazyPurchasesProvider>
-                          </WorkoutDraftProvider>
-                        </BodyMeasurementsProvider>
-                      </HealthIntegrationProvider>
-                    </ReminderSettingsProvider>
-                  </MedicalRecordProvider>
-                </MessageProvider>
-              </TrainingFeedProvider>
-            </ProgressPhotoProvider>
-          </CustomWorkoutProvider>
-        </CustomPlanProvider>
-      </TrainingLogProvider>
+      <TrainingLogProvider>{children}</TrainingLogProvider>
     </GamificationProvider>
+  );
+}
+
+function AppDataProviders({ children }: { children: React.ReactNode }) {
+  const [deferredReady, setDeferredReady] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDeferredReady(true), DEFERRED_PROVIDERS_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <CoreAppProviders>
+      {deferredReady ? <DeferredAppProviders>{children}</DeferredAppProviders> : children}
+    </CoreAppProviders>
   );
 }
 
@@ -75,10 +97,11 @@ function HeavyBootstrap() {
 function AppShell() {
   const { isLoggedIn, loading: authLoading } = useAuth();
   const { isOnboarded, loading: userLoading } = useUser();
+  const { mainUnlocked } = useMainUnlock();
   const [heavyReady, setHeavyReady] = useState(false);
 
   const authReady = !authLoading && !userLoading;
-  const needsHeavyProviders = isLoggedIn && isOnboarded;
+  const needsHeavyProviders = isLoggedIn && isOnboarded && mainUnlocked;
 
   useEffect(() => {
     const task = InteractionManager.runAfterInteractions(() => setHeavyReady(true));
@@ -95,8 +118,7 @@ function AppShell() {
 
   const navigator = <RootNavigator />;
 
-  // Skip GamificationProvider until onboarding is complete.
-  if (!isLoggedIn || !isOnboarded) {
+  if (!isLoggedIn || !isOnboarded || !mainUnlocked) {
     return (
       <>
         {navigator}
@@ -124,7 +146,9 @@ export default function AppRoot() {
       <AppPreferencesProvider>
         <AuthProvider onAccountDeleted={() => setDataResetKey((key) => key + 1)}>
           <UserProvider key={dataResetKey}>
-            <AppShell />
+            <MainUnlockProvider>
+              <AppShell />
+            </MainUnlockProvider>
           </UserProvider>
         </AuthProvider>
       </AppPreferencesProvider>

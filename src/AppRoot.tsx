@@ -43,15 +43,13 @@ function DeferredAppProviders({ children }: { children: React.ReactNode }) {
           <TrainingFeedProvider>
             <MessageProvider>
               <MedicalRecordProvider>
-                <ReminderSettingsProvider>
-                  <HealthIntegrationProvider>
-                    <BodyMeasurementsProvider>
-                      <WorkoutDraftProvider>
-                        <LazyPurchasesProvider>{children}</LazyPurchasesProvider>
-                      </WorkoutDraftProvider>
-                    </BodyMeasurementsProvider>
-                  </HealthIntegrationProvider>
-                </ReminderSettingsProvider>
+                <HealthIntegrationProvider>
+                  <BodyMeasurementsProvider>
+                    <WorkoutDraftProvider>
+                      <LazyPurchasesProvider>{children}</LazyPurchasesProvider>
+                    </WorkoutDraftProvider>
+                  </BodyMeasurementsProvider>
+                </HealthIntegrationProvider>
               </MedicalRecordProvider>
             </MessageProvider>
           </TrainingFeedProvider>
@@ -64,7 +62,9 @@ function DeferredAppProviders({ children }: { children: React.ReactNode }) {
 function CoreAppProviders({ children }: { children: React.ReactNode }) {
   return (
     <GamificationProvider>
-      <TrainingLogProvider>{children}</TrainingLogProvider>
+      <TrainingLogProvider>
+        <ReminderSettingsProvider>{children}</ReminderSettingsProvider>
+      </TrainingLogProvider>
     </GamificationProvider>
   );
 }
